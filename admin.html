@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KvK Planner Admin</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="topbar"><div><h1>👑 KvK Planner Admin</h1><p>Private allocation dashboard</p></div><div class="top-actions"><a class="secondary button-link" href="index.html">← Player Planner</a><button id="logoutBtn" class="secondary" hidden>Log out</button></div></header>
+<main>
+<section id="adminLoginCard" class="card login-card">
+  <h2>Admin Login</h2><p class="muted">Only approved owner, King and Minister accounts can access allocations and resource totals.</p>
+  <form id="loginForm"><label>Email<input id="loginEmail" type="email" required></label><label>Password<input id="loginPassword" type="password" required></label><div id="loginError" class="form-error" hidden></div><button class="primary" type="submit">Log in</button></form>
+</section>
+<div id="adminApp" hidden>
+<nav class="day-tabs">
+<button class="day-tab active" data-day="monday">🏗️ <span>City Construction<small>Monday</small></span></button>
+<button class="day-tab" data-day="tuesday">📚 <span>Basic Skills<small>Tuesday</small></span></button>
+<button class="day-tab" data-day="thursday">🦸 <span>Hero Development<small>Thursday</small></span></button>
+</nav>
+<section class="admin-welcome"><div><strong id="adminName">Admin</strong><small id="adminRole"></small></div><span>Private resource data</span></section>
+<section class="card"><div class="schedule-header"><div><strong id="adminRoleTitle">🏛️ Chief Minister</strong><small>Click a slot to review applicants.</small></div><div class="badges"><span id="adminPendingBadge" class="badge amber">0 requests</span><span id="adminConfirmedBadge" class="badge green">0 confirmed</span></div></div><div id="adminCrossoverNote" class="note" hidden>🔁 Tuesday's first slot is the linked Monday 23:45 → Tuesday 00:15 Chief Minister appointment.</div><div id="adminSlotList" class="slot-list"></div></section>
+</div>
+</main>
+<dialog id="applicantDialog"><button type="button" class="close-btn" data-close="applicantDialog">×</button><h2>Slot Requests</h2><p id="applicantSlotLabel" class="muted"></p><div id="applicantList"></div></dialog>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="admin.js"></script>
+</body></html>

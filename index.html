@@ -7,132 +7,67 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <h1>Kingshot KvK Planner</h1>
-      <p>PAR · VIK · KCB · FOR</p>
-    </div>
-    <div class="top-actions">
-      <button id="profileBtn" class="secondary">My KvK Profile</button>
-      <button id="adminBtn" class="secondary">Admin View</button>
-    </div>
-  </header>
+<header class="topbar">
+  <div><h1>⚔️ Kingshot KvK Planner</h1><p>PAR · VIK · KCB · FOR</p></div>
+  <div class="top-actions">
+    <span id="profileStatus" class="profile-status incomplete">Profile required</span>
+    <button id="profileBtn" class="secondary">My KvK Profile</button>
+    <a class="secondary button-link" href="admin.html">Admin Login</a>
+  </div>
+</header>
+<main>
+  <nav class="day-tabs">
+    <button class="day-tab active" data-day="monday">🏗️ <span>City Construction<small>Monday</small></span></button>
+    <button class="day-tab" data-day="tuesday">📚 <span>Basic Skills<small>Tuesday</small></span></button>
+    <button class="day-tab" data-day="thursday">🦸 <span>Hero Development<small>Thursday</small></span></button>
+  </nav>
+  <section id="connectionBanner" class="connection-banner">Connecting to shared planner…</section>
+  <section class="info-bar"><div><small id="roleSmall">Chief Minister</small><strong>Select 3–5 acceptable slots</strong></div><span>UTC</span></section>
+  <section class="card">
+    <button id="tipsToggle" class="card-toggle"><span>💡 <strong>Points Tips</strong></span><span id="tipsArrow">⌄</span></button>
+    <div id="tipsPanel" class="tips-panel"></div>
+  </section>
+  <section id="lockedPanel" class="locked-panel">🔒 Complete your KvK Profile before requesting minister slots.<button id="lockedProfileBtn" class="primary">Complete Profile</button></section>
+  <section id="selectionPanel" class="selection-panel" hidden>
+    <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p></div>
+    <div class="selection-controls"><span id="selectionCount">0 of 5 selected</span><button id="submitBtn" class="primary" disabled>Submit Requests</button></div>
+  </section>
+  <section class="card">
+    <div class="schedule-header"><div><strong id="roleTitle">🏛️ Chief Minister</strong><small id="scheduleSummary"></small></div><div class="badges"><span id="confirmedBadge" class="badge green">0 confirmed</span></div></div>
+    <div id="crossoverNote" class="note" hidden>🔁 Tuesday's first slot is the same Chief Minister appointment as Monday 23:45 → Tuesday 00:15.</div>
+    <div id="slotList" class="slot-list"></div>
+  </section>
+  <section class="card my-requests">
+    <div class="schedule-header"><div><strong>My Requests</strong><small>You can replace your choices for a day by selecting a new set of 3–5 times and submitting again.</small></div></div>
+    <div id="myRequests"></div>
+  </section>
+</main>
 
-  <main>
-    <nav class="day-tabs">
-      <button class="day-tab active" data-day="monday">🏗️ <span>City Construction<small>Monday</small></span></button>
-      <button class="day-tab" data-day="tuesday">📚 <span>Basic Skills<small>Tuesday</small></span></button>
-      <button class="day-tab" data-day="thursday">🦸 <span>Hero Development<small>Thursday</small></span></button>
-    </nav>
+<dialog id="profileDialog">
+<form id="profileForm">
+  <button type="button" class="close-btn" data-close="profileDialog">×</button>
+  <h2>Complete your KvK Profile</h2>
+  <p class="muted">You need to complete this before requesting slots. Your resources are saved once and reused across all KvK days.</p>
+  <div class="two-col">
+    <label>Player ID<input id="playerId" required inputmode="numeric" placeholder="Player ID"></label>
+    <label>Player Name<input id="playerName" required placeholder="Current IGN"></label>
+  </div>
+  <label>Alliance<select id="alliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select></label>
+  <div class="resource-box">
+    <h3>Resource Snapshot</h3>
+    <label>🏆 Truegold <input id="truegold" type="number" min="0" step="1" value="0"></label>
+    <label>💨 General Speed Up (Hours) <input id="general" type="number" min="0" step="0.5" value="0"></label>
+    <label>📘 Research Speed Up (Hours) <input id="research" type="number" min="0" step="0.5" value="0"></label>
+    <label>⚔️ Training Speed Up (Hours) <input id="training" type="number" min="0" step="0.5" value="0"></label>
+    <label>🏗️ Construction Speed Up (Hours) <input id="construction" type="number" min="0" step="0.5" value="0"></label>
+  </div>
+  <div id="profileError" class="form-error" hidden></div>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close="profileDialog">Cancel</button><button type="submit" class="primary">Save Profile</button></div>
+</form>
+</dialog>
 
-    <section class="info-bar">
-      <div>
-        <small id="roleSmall">Chief Minister</small>
-        <strong>Select 3–5 acceptable slots</strong>
-      </div>
-      <span>UTC</span>
-    </section>
-
-    <section class="card">
-      <button id="tipsToggle" class="card-toggle">
-        <span>💡 <strong>Points Tips</strong></span>
-        <span id="tipsArrow">⌄</span>
-      </button>
-      <div id="tipsPanel" class="tips-panel"></div>
-    </section>
-
-    <section id="selectionPanel" class="selection-panel">
-      <div>
-        <strong>Choose the times you can accept</strong>
-        <p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p>
-      </div>
-      <div class="selection-controls">
-        <span id="selectionCount">0 of 5 selected</span>
-        <button id="submitBtn" class="primary" disabled>Submit Requests</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="schedule-header">
-        <div>
-          <strong id="roleTitle">🏛️ Chief Minister</strong>
-          <small id="scheduleSummary"></small>
-        </div>
-        <div class="badges">
-          <span id="pendingBadge" class="badge amber">0 requests</span>
-          <span id="confirmedBadge" class="badge green">0 confirmed</span>
-        </div>
-      </div>
-
-      <div id="crossoverNote" class="note" hidden>
-        🔁 Tuesday's first slot is the same Chief Minister appointment as Monday 23:45 → Tuesday 00:15.
-      </div>
-
-      <div id="adminNote" class="note admin-note" hidden>
-        👑 Admin View: click a slot to compare applicants and award it.
-      </div>
-
-      <div id="slotList" class="slot-list"></div>
-    </section>
-
-    <section class="card my-requests">
-      <div class="schedule-header">
-        <div>
-          <strong>My Requests</strong>
-          <small>Once you receive a slot for a day, your other requests for that day are withdrawn automatically.</small>
-        </div>
-      </div>
-      <div id="myRequests"></div>
-    </section>
-  </main>
-
-  <dialog id="profileDialog">
-    <form id="profileForm">
-      <button type="button" class="close-btn" data-close="profileDialog">×</button>
-      <h2>My KvK Profile</h2>
-      <p class="muted">Save this once. These resources will be reused for all of your slot requests.</p>
-
-      <div class="two-col">
-        <label>Player ID
-          <input id="playerId" required inputmode="numeric" placeholder="Player ID">
-        </label>
-        <label>Player Name
-          <input id="playerName" required placeholder="Current IGN">
-        </label>
-      </div>
-
-      <label>Alliance
-        <select id="alliance" required>
-          <option>PAR</option>
-          <option>VIK</option>
-          <option>KCB</option>
-          <option>FOR</option>
-        </select>
-      </label>
-
-      <div class="resource-box">
-        <h3>Resource Snapshot</h3>
-        <label>🏆 Truegold <input id="truegold" type="number" min="0" step="1" value="0"></label>
-        <label>💨 General Speed Up (Hours) <input id="general" type="number" min="0" step="0.5" value="0"></label>
-        <label>📘 Research Speed Up (Hours) <input id="research" type="number" min="0" step="0.5" value="0"></label>
-        <label>⚔️ Training Speed Up (Hours) <input id="training" type="number" min="0" step="0.5" value="0"></label>
-        <label>🏗️ Construction Speed Up (Hours) <input id="construction" type="number" min="0" step="0.5" value="0"></label>
-      </div>
-
-      <div class="dialog-actions">
-        <button type="button" class="secondary" data-close="profileDialog">Cancel</button>
-        <button type="submit" class="primary">Save Profile</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="adminDialog">
-    <button type="button" class="close-btn" data-close="adminDialog">×</button>
-    <h2>Slot Requests</h2>
-    <p id="adminSlotLabel" class="muted"></p>
-    <div id="adminApplicants"></div>
-  </dialog>
-
-  <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
