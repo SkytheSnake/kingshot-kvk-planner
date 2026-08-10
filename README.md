@@ -1,24 +1,43 @@
-# Kingshot KvK Planner — v2
+# Kingshot KvK Planner — v3
 
-This version adds the request/allocation workflow.
+This version changes slot requesting to a checkbox/multi-select flow and saves player resources once in a reusable KvK profile.
 
-## Days and positions
+## Main changes
 
-### Monday — City Construction
-- Position: Chief Minister
-- Starts Sunday 23:45 UTC
-- 30-minute slots
-- Final Monday slot is Monday 23:45 → Tuesday 00:15
+### 1. Select 3–5 slots
+Players no longer rank 1st/2nd/3rd choices.
 
-### Tuesday — Basic Skills
-- Position: Chief Minister
-- First slot is the same linked Monday 23:45 → Tuesday 00:15 booking
-- 30-minute slots thereafter
+For each day they:
+- tick at least **3**
+- tick no more than **5**
+- submit all selected times together
 
-### Thursday — Hero Development
-- Position: Noble Advisor
-- Starts Wednesday 23:45 UTC
-- 30-minute slots
+All selected times are treated equally as acceptable backup options.
+
+Confirmed/full slots are disabled.
+
+### 2. Saved KvK profile
+Players enter this once:
+- Player ID
+- Player name
+- Alliance
+- Truegold
+- General speed-ups
+- Research speed-ups
+- Training speed-ups
+- Construction speed-ups
+
+That resource snapshot is reused when requesting Monday, Tuesday and Thursday slots.
+
+### 3. Admin allocation
+Admin view still lets the King/Minister of Justice:
+- open a slot
+- compare applicants
+- see resource totals
+- award one player
+- reject requests
+
+When someone is awarded a slot for a day, their other pending requests for that same day are automatically withdrawn.
 
 ## Alliances
 - PAR
@@ -26,40 +45,19 @@ This version adds the request/allocation workflow.
 - KCB
 - FOR
 
-## New booking flow
-Players submit a **request**, not an automatic booking.
+## Days
+- Monday — City Construction — Chief Minister
+- Tuesday — Basic Skills — Chief Minister
+- Thursday — Hero Development — Noble Advisor
 
-A request stores:
-- Player ID
-- Player name
-- Alliance
-- Backup priority
-- Truegold
-- General speed-ups
-- Research speed-ups
-- Training speed-ups
-- Construction speed-ups
+Monday and Tuesday still share the Monday 23:45 → Tuesday 00:15 Chief Minister crossover slot.
 
-Players can request multiple slots and rank them as 1st/2nd/3rd choice.
+## Important
+This is still a browser-only prototype using localStorage.
 
-Admin view lets the King/Minister of Justice:
-- open a slot
-- compare applicants and resources
-- award the slot
-- reject a request
-
-When a slot is awarded, the winning player's other pending requests for that same day/position are withdrawn automatically.
-
-## Important: this is still a local prototype
-This version still uses `localStorage`, so data is only saved in the browser being used.
-
-The next stage is to connect the planner to Supabase (shared database) and then connect Player ID lookups to a Kingshot player API if a reliable endpoint is available.
-
-## Replace your existing GitHub files
-Upload these files over the top of the current versions:
-- `index.html`
-- `style.css`
-- `script.js`
-- `README.md`
-
-GitHub Pages will redeploy automatically after you commit the changes.
+The next stage is:
+1. Supabase shared database
+2. proper admin authentication/permissions
+3. player profile storage
+4. Kingshot Player ID lookup if a reliable endpoint is available
+5. sign-up deadline/resource locking

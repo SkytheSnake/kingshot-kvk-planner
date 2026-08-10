@@ -13,6 +13,7 @@
       <div class="kingdom">Kingshot KvK Planner</div>
     </div>
     <div class="top-actions">
+      <button id="profileButton" class="ghost-btn">My KvK profile</button>
       <button id="adminToggle" class="ghost-btn">Admin view</button>
       <span class="server-pill">PAR · VIK · KCB · FOR</span>
     </div>
@@ -42,7 +43,7 @@
     <section class="notice">
       <div>
         <small id="roleLabel">Chief Minister</small>
-        <strong>30-minute request slots</strong>
+        <strong>Select 3–5 acceptable slots</strong>
       </div>
       <div class="notice-right">
         <span class="notice-pill">UTC</span>
@@ -56,6 +57,17 @@
         <span id="pointsArrow">⌄</span>
       </button>
       <div class="points-content" id="pointsContent"></div>
+    </section>
+
+    <section class="selection-card" id="selectionCard">
+      <div>
+        <strong>Select your available times</strong>
+        <small>Choose at least 3 and no more than 5. All selected times are treated equally.</small>
+      </div>
+      <div class="selection-actions">
+        <span id="selectionCount" class="selection-count">0 of 5 selected</span>
+        <button id="submitSelections" class="primary-btn" disabled>Submit requests</button>
+      </div>
     </section>
 
     <section class="minister-card">
@@ -85,7 +97,7 @@
       <div class="section-heading">
         <div>
           <strong>My requests</strong>
-          <small>Backup choices can be ranked 1st, 2nd, 3rd, etc.</small>
+          <small>Your selected backup times will disappear automatically once you are awarded a slot for that day.</small>
         </div>
         <button id="clearMine" class="ghost-btn small">Clear my test data</button>
       </div>
@@ -93,27 +105,27 @@
     </section>
   </main>
 
-  <dialog id="requestDialog">
-    <form method="dialog" id="requestForm">
+  <dialog id="profileDialog">
+    <form method="dialog" id="profileForm">
       <button class="dialog-close" value="cancel" aria-label="Close">×</button>
-      <h2 id="requestDialogTitle">Request slot</h2>
-      <p class="dialog-slot" id="dialogSlot"></p>
+      <h2>My KvK profile</h2>
+      <p class="dialog-slot">Enter these once. Your saved resources will be reused across Monday, Tuesday and Thursday.</p>
 
       <div class="grid-2">
         <label>
           Player ID
-          <input id="playerId" inputmode="numeric" maxlength="20" placeholder="e.g. 123456789" required />
+          <input id="profilePlayerId" inputmode="numeric" maxlength="20" placeholder="e.g. 123456789" required />
         </label>
 
         <label>
           Player name
-          <input id="playerName" maxlength="30" autocomplete="off" placeholder="Temporary until API lookup" required />
+          <input id="profilePlayerName" maxlength="30" autocomplete="off" placeholder="Temporary until API lookup" required />
         </label>
       </div>
 
       <label>
         Alliance
-        <select id="allianceName" required>
+        <select id="profileAlliance" required>
           <option value="PAR">PAR</option>
           <option value="VIK">VIK</option>
           <option value="KCB">KCB</option>
@@ -121,48 +133,37 @@
         </select>
       </label>
 
-      <label>
-        Backup priority
-        <select id="priority">
-          <option value="1">1st choice</option>
-          <option value="2">2nd choice</option>
-          <option value="3">3rd choice</option>
-          <option value="4">4th choice</option>
-          <option value="5">5th choice</option>
-        </select>
-      </label>
-
       <div class="resources-box">
-        <h3>Resources</h3>
+        <h3>Resource snapshot</h3>
         <div class="resource-row">
           <span>🏆 Truegold</span>
-          <input id="truegold" type="number" min="0" step="1" value="0" />
+          <input id="profileTruegold" type="number" min="0" step="1" value="0" />
         </div>
         <div class="resource-row">
           <span>💨 General Speed Up (Hours)</span>
-          <input id="generalSpeed" type="number" min="0" step="0.5" value="0" />
+          <input id="profileGeneral" type="number" min="0" step="0.5" value="0" />
         </div>
         <div class="resource-row">
           <span>📘 Research Speed Up (Hours)</span>
-          <input id="researchSpeed" type="number" min="0" step="0.5" value="0" />
+          <input id="profileResearch" type="number" min="0" step="0.5" value="0" />
         </div>
         <div class="resource-row">
           <span>⚔️ Training Speed Up (Hours)</span>
-          <input id="trainingSpeed" type="number" min="0" step="0.5" value="0" />
+          <input id="profileTraining" type="number" min="0" step="0.5" value="0" />
         </div>
         <div class="resource-row">
           <span>🏗️ Construction Speed Up (Hours)</span>
-          <input id="constructionSpeed" type="number" min="0" step="0.5" value="0" />
+          <input id="profileConstruction" type="number" min="0" step="0.5" value="0" />
         </div>
       </div>
 
       <p class="helper">
-        This creates a request, not an automatic booking. The King/Minister of Justice can award the slot after comparing requests.
+        In the live shared version, this profile will be stored in Supabase and linked to your Player ID. The Player ID will later be used for name updates if a reliable Kingshot lookup endpoint is available.
       </p>
 
       <div class="dialog-actions">
-        <button type="button" class="secondary-btn" id="cancelRequest">Cancel</button>
-        <button type="submit" class="primary-btn">Request slot</button>
+        <button type="button" class="secondary-btn" id="cancelProfile">Cancel</button>
+        <button type="submit" class="primary-btn">Save profile</button>
       </div>
     </form>
   </dialog>

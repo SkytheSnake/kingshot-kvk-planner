@@ -40,24 +40,17 @@ const DAY_CONFIG = {
   }
 };
 
-const STORE = "kingshot-kvk-planner-v2";
+const STORE = "kingshot-kvk-planner-v3";
+const PROFILE_STORE = "kingshot-player-profile-v3";
 const ALLIANCES = ["PAR", "VIK", "KCB", "FOR"];
+
 let currentDay = "monday";
-let selectedSlotKey = null;
-let selectedSlotInfo = null;
 let adminMode = false;
+let selectedKeys = new Set();
+let selectedAdminSlotKey = null;
+let selectedAdminSlotInfo = null;
 
 const $ = id => document.getElementById(id);
-const slotsEl = $("slots");
-const slotSummary = $("slotSummary");
-const confirmedCount = $("confirmedCount");
-const requestCount = $("requestCount");
-const carryoverNote = $("carryoverNote");
-const roleLabel = $("roleLabel");
-const ministerTitle = $("ministerTitle");
-const pointsContent = $("pointsContent");
-const adminBanner = $("adminBanner");
-const myRequests = $("myRequests");
 
 function blankState() {
   return { requests: [], confirmed: {} };
@@ -65,10 +58,22 @@ function blankState() {
 function getState() {
   try {
     return { ...blankState(), ...(JSON.parse(localStorage.getItem(STORE) || "{}")) };
-  } catch { return blankState(); }
+  } catch {
+    return blankState();
+  }
 }
 function saveState(state) {
   localStorage.setItem(STORE, JSON.stringify(state));
+}
+function getProfile() {
+  try {
+    return JSON.parse(localStorage.getItem(PROFILE_STORE) || "{}");
+  } catch {
+    return {};
+  }
+}
+function saveProfile(profile) {
+  localStorage.setItem(PROFILE_STORE, JSON.stringify(profile));
 }
 function pad(n) { return String(n).padStart(2, "0"); }
 
@@ -105,6 +110,10 @@ function slotInfo(day, index) {
   };
 }
 
+function requestsForSlot(state, key) {
+  return state.requests.filter(r => r.slotKey === key && r.status !== "withdrawn");
+}
+
 function renderTips() {
   const tips = DAY_CONFIG[currentDay].tips;
   const group = (title, items, cls="") => `
@@ -112,24 +121,34 @@ function renderTips() {
       <h4>${title}</h4>
       <div class="chips">${items.map(x => `<span>${x}</span>`).join("")}</div>
     </div>`;
-  pointsContent.innerHTML =
+  $("pointsContent").innerHTML =
     group("✅ GREAT FOR POINTS", tips.great) +
     group("🟧 OK FOR POINTS", tips.ok, "ok") +
     group("⛔ SKIP TODAY", tips.skip, "skip");
 }
 
-function requestsForSlot(state, key) {
-  return state.requests.filter(r => r.slotKey === key && r.status !== "withdrawn");
+function updateSelectionUI() {
+  const count = selectedKeys.size;
+  $("selectionCount").textContent = `${count} of 5 selected`;
+  $("selectionCount").classList.toggle("valid", count >= 3 && count <= 5);
+  $("submitSelections").disabled = !(count >= 3 && count <= 5) || adminMode;
+
+  document.querySelectorAll(".slot-checkbox").forEach(box => {
+    if (!box.checked && count >= 5) box.disabled = true;
+  });
 }
 
 function render() {
   const cfg = DAY_CONFIG[currentDay];
   const state = getState();
+  const slotsEl = $("slots");
   slotsEl.innerHTML = "";
-  roleLabel.textContent = cfg.role;
-  ministerTitle.textContent = `${cfg.icon} ${cfg.role}`;
-  carryoverNote.hidden = currentDay !== "tuesday";
-  adminBanner.hidden = !adminMode;
+
+  $("roleLabel").textContent = cfg.role;
+  $("ministerTitle").textContent = `${cfg.icon} ${cfg.role}`;
+  $("carryoverNote").hidden = currentDay !== "tuesday";
+  $("adminBanner").hidden = !adminMode;
+  $("selectionCard").hidden = adminMode;
   renderTips();
 
   let visibleConfirmed = 0;
@@ -150,6 +169,19 @@ function render() {
     if (confirmedRequest) row.classList.add("confirmed");
     else if (requests.length) row.classList.add("pending");
     else row.classList.add("empty");
+    if (selectedKeys.has(info.key)) row.classList.add("selected");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "slot-checkbox";
+    checkbox.checked = selectedKeys.has(info.key);
+    checkbox.disabled = adminMode || !!confirmedRequest;
+    checkbox.setAttribute("aria-label", `Select ${info.fullDisplay}`);
+
+    checkbox.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleSelection(info.key, checkbox.checked);
+    });
 
     const time = document.createElement("div");
     time.className = "slot-time";
@@ -176,120 +208,142 @@ function render() {
     } else {
       const empty = document.createElement("span");
       empty.className = "empty-text";
-      empty.textContent = adminMode ? "No requests" : "Available — click to request";
+      empty.textContent = adminMode ? "No requests" : "Available";
       person.append(empty);
     }
 
     const status = document.createElement("div");
     status.className = "status " + (confirmedRequest ? "confirmed" : requests.length ? "pending" : "");
-    status.textContent = confirmedRequest ? "✓ Confirmed" : requests.length ? `${requests.length} pending` : "+";
+    status.textContent = confirmedRequest ? "✓ Confirmed" : requests.length ? `${requests.length} pending` : "";
 
-    row.append(time, person, status);
+    row.append(checkbox, time, person, status);
+
     row.addEventListener("click", () => {
-      if (adminMode) openAdmin(info);
-      else openRequest(info);
+      if (adminMode) {
+        openAdmin(info);
+        return;
+      }
+      if (confirmedRequest) return;
+      toggleSelection(info.key, !selectedKeys.has(info.key));
     });
+
     slotsEl.appendChild(row);
   }
 
-  slotSummary.textContent = `${visibleConfirmed}/${cfg.slots} confirmed`;
-  confirmedCount.textContent = `${visibleConfirmed} confirmed`;
-  requestCount.textContent = `${visibleRequests} request${visibleRequests === 1 ? "" : "s"}`;
+  $("slotSummary").textContent = `${visibleConfirmed}/${cfg.slots} confirmed`;
+  $("confirmedCount").textContent = `${visibleConfirmed} confirmed`;
+  $("requestCount").textContent = `${visibleRequests} request${visibleRequests === 1 ? "" : "s"}`;
   renderMyRequests();
+  updateSelectionUI();
 }
 
-function openRequest(info) {
-  selectedSlotKey = info.key;
-  selectedSlotInfo = info;
-  $("dialogSlot").textContent = `${DAY_CONFIG[currentDay].role} · ${info.fullDisplay}`;
-
-  const remembered = JSON.parse(localStorage.getItem("kingshot-player-profile") || "{}");
-  $("playerId").value = remembered.playerId || "";
-  $("playerName").value = remembered.playerName || "";
-  $("allianceName").value = ALLIANCES.includes(remembered.alliance) ? remembered.alliance : "KCB";
-  $("priority").value = "1";
-  ["truegold","generalSpeed","researchSpeed","trainingSpeed","constructionSpeed"].forEach(id => $(id).value = 0);
-
-  $("requestDialog").showModal();
-  setTimeout(() => $("playerId").focus(), 20);
+function toggleSelection(key, shouldSelect) {
+  if (shouldSelect) {
+    if (selectedKeys.size >= 5 && !selectedKeys.has(key)) {
+      alert("You can select a maximum of 5 slots.");
+      render();
+      return;
+    }
+    selectedKeys.add(key);
+  } else {
+    selectedKeys.delete(key);
+  }
+  render();
 }
 
-$("requestForm").addEventListener("submit", (event) => {
+function openProfileDialog() {
+  const profile = getProfile();
+  $("profilePlayerId").value = profile.playerId || "";
+  $("profilePlayerName").value = profile.playerName || "";
+  $("profileAlliance").value = ALLIANCES.includes(profile.alliance) ? profile.alliance : "KCB";
+  $("profileTruegold").value = profile.resources?.truegold ?? 0;
+  $("profileGeneral").value = profile.resources?.general ?? 0;
+  $("profileResearch").value = profile.resources?.research ?? 0;
+  $("profileTraining").value = profile.resources?.training ?? 0;
+  $("profileConstruction").value = profile.resources?.construction ?? 0;
+  $("profileDialog").showModal();
+}
+
+$("profileButton").addEventListener("click", openProfileDialog);
+$("cancelProfile").addEventListener("click", () => $("profileDialog").close());
+
+$("profileForm").addEventListener("submit", (event) => {
   event.preventDefault();
-  const playerId = $("playerId").value.trim();
-  const playerName = $("playerName").value.trim();
-  const alliance = $("allianceName").value;
-  if (!playerId || !playerName) return;
+  const profile = {
+    playerId: $("profilePlayerId").value.trim(),
+    playerName: $("profilePlayerName").value.trim(),
+    alliance: $("profileAlliance").value,
+    resources: {
+      truegold: Number($("profileTruegold").value || 0),
+      general: Number($("profileGeneral").value || 0),
+      research: Number($("profileResearch").value || 0),
+      training: Number($("profileTraining").value || 0),
+      construction: Number($("profileConstruction").value || 0)
+    },
+    updatedAt: Date.now()
+  };
+  saveProfile(profile);
+  $("profileDialog").close();
+});
 
-  const profile = { playerId, playerName, alliance };
-  localStorage.setItem("kingshot-player-profile", JSON.stringify(profile));
-
-  const state = getState();
-  const existing = state.requests.find(r =>
-    r.slotKey === selectedSlotKey &&
-    r.playerId === playerId &&
-    r.status !== "withdrawn"
-  );
-  if (existing) {
-    alert("You have already requested this slot.");
+$("submitSelections").addEventListener("click", () => {
+  if (selectedKeys.size < 3 || selectedKeys.size > 5) {
+    alert("Please select between 3 and 5 slots.");
     return;
   }
 
-  const req = {
-    id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-    slotKey: selectedSlotKey,
-    day: currentDay,
-    role: DAY_CONFIG[currentDay].role,
-    playerId,
-    playerName,
-    alliance,
-    priority: Number($("priority").value),
-    resources: {
-      truegold: Number($("truegold").value || 0),
-      general: Number($("generalSpeed").value || 0),
-      research: Number($("researchSpeed").value || 0),
-      training: Number($("trainingSpeed").value || 0),
-      construction: Number($("constructionSpeed").value || 0)
-    },
-    status: "pending",
-    createdAt: Date.now()
-  };
+  const profile = getProfile();
+  if (!profile.playerId || !profile.playerName || !profile.alliance) {
+    alert("Please save your KvK profile first.");
+    openProfileDialog();
+    return;
+  }
 
-  state.requests.push(req);
+  const state = getState();
+
+  // Prevent duplicate active requests for the same player/day/slot.
+  const existingActive = new Set(
+    state.requests
+      .filter(r => r.playerId === profile.playerId && r.day === currentDay && r.status !== "withdrawn")
+      .map(r => r.slotKey)
+  );
+
+  selectedKeys.forEach(slotKey => {
+    if (existingActive.has(slotKey)) return;
+
+    state.requests.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+      slotKey,
+      day: currentDay,
+      role: DAY_CONFIG[currentDay].role,
+      playerId: profile.playerId,
+      playerName: profile.playerName,
+      alliance: profile.alliance,
+      resources: { ...profile.resources },
+      status: "pending",
+      createdAt: Date.now()
+    });
+  });
+
   saveState(state);
-  $("requestDialog").close();
+  selectedKeys.clear();
   render();
+  alert("Your slot requests have been submitted.");
 });
 
-$("cancelRequest").addEventListener("click", () => $("requestDialog").close());
-
 function openAdmin(info) {
-  selectedSlotKey = info.key;
-  selectedSlotInfo = info;
+  selectedAdminSlotKey = info.key;
+  selectedAdminSlotInfo = info;
   $("adminSlotLabel").textContent = `${DAY_CONFIG[currentDay].role} · ${info.fullDisplay}`;
   renderAdminApplicants();
   $("adminDialog").showModal();
 }
 
-function scoreForDay(req) {
-  const r = req.resources;
-  if (currentDay === "monday") {
-    return r.truegold * 10 + r.general + r.construction + r.research * 0.25;
-  }
-  if (currentDay === "tuesday") {
-    return r.truegold * 8 + r.general + r.research + r.construction * 0.5;
-  }
-  return r.general + r.training + r.truegold * 2;
-}
-
 function renderAdminApplicants() {
   const state = getState();
-  const requests = requestsForSlot(state, selectedSlotKey)
+  const requests = requestsForSlot(state, selectedAdminSlotKey)
     .slice()
-    .sort((a,b) => {
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return scoreForDay(b) - scoreForDay(a);
-    });
+    .sort((a, b) => relevantScore(b) - relevantScore(a));
 
   const wrap = $("adminApplicants");
   wrap.innerHTML = "";
@@ -300,11 +354,11 @@ function renderAdminApplicants() {
   }
 
   requests.forEach(req => {
-    const isConfirmed = state.confirmed[selectedSlotKey] === req.id;
+    const isConfirmed = state.confirmed[selectedAdminSlotKey] === req.id;
+    const r = req.resources;
+
     const el = document.createElement("div");
     el.className = "applicant" + (isConfirmed ? " confirmed-applicant" : "");
-
-    const total = req.resources.general + req.resources.research + req.resources.training + req.resources.construction;
 
     el.innerHTML = `
       <div class="applicant-top">
@@ -313,15 +367,13 @@ function renderAdminApplicants() {
           <strong>${req.playerName}</strong>
           <span class="meta">ID ${req.playerId}</span>
         </div>
-        <span class="choice">${ordinal(req.priority)} choice</span>
       </div>
       <div class="summary">
-        🏆 ${req.resources.truegold} TG ·
-        💨 ${req.resources.general}h general ·
-        📘 ${req.resources.research}h research ·
-        ⚔️ ${req.resources.training}h training ·
-        🏗️ ${req.resources.construction}h construction<br>
-        Total speed-ups entered: ${total}h
+        🏆 ${r.truegold} TG ·
+        💨 ${r.general}h general ·
+        📘 ${r.research}h research ·
+        ⚔️ ${r.training}h training ·
+        🏗️ ${r.construction}h construction
       </div>
       <div class="applicant-actions">
         <button class="primary-btn award-btn">${isConfirmed ? "Confirmed" : "Award slot"}</button>
@@ -334,22 +386,30 @@ function renderAdminApplicants() {
   });
 }
 
+function relevantScore(req) {
+  const r = req.resources;
+  if (currentDay === "monday") return r.truegold * 10 + r.general + r.construction;
+  if (currentDay === "tuesday") return r.truegold * 8 + r.general + r.research + (r.construction * 0.5);
+  return r.general + r.training + (r.truegold * 2);
+}
+
 function awardRequest(requestId) {
   const state = getState();
   const req = state.requests.find(r => r.id === requestId);
   if (!req) return;
 
-  state.confirmed[selectedSlotKey] = requestId;
+  state.confirmed[selectedAdminSlotKey] = requestId;
   req.status = "confirmed";
 
-  // Withdraw other requests by the same player for the same KvK day/role.
-  // The Monday→Tuesday crossover remains one shared booking.
+  // Once a player receives one appointment for this day, all their other
+  // pending requests for that same day are automatically withdrawn.
   state.requests.forEach(r => {
-    if (r.id !== requestId &&
-        r.playerId === req.playerId &&
-        r.role === req.role &&
-        r.day === req.day &&
-        r.status === "pending") {
+    if (
+      r.id !== requestId &&
+      r.playerId === req.playerId &&
+      r.day === req.day &&
+      r.status === "pending"
+    ) {
       r.status = "withdrawn";
     }
   });
@@ -363,66 +423,68 @@ function rejectRequest(requestId) {
   const state = getState();
   const req = state.requests.find(r => r.id === requestId);
   if (!req) return;
+
   req.status = "withdrawn";
-  if (state.confirmed[selectedSlotKey] === requestId) delete state.confirmed[selectedSlotKey];
+  if (state.confirmed[selectedAdminSlotKey] === requestId) {
+    delete state.confirmed[selectedAdminSlotKey];
+  }
+
   saveState(state);
   renderAdminApplicants();
   render();
 }
 
-function ordinal(n) {
-  return n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`;
+function findDisplayForRequest(req) {
+  for (let i = 0; i < DAY_CONFIG[req.day].slots; i++) {
+    const info = slotInfo(req.day, i);
+    if (info.key === req.slotKey) return info.fullDisplay;
+  }
+  return req.slotKey;
 }
 
 function renderMyRequests() {
   const state = getState();
-  const profile = JSON.parse(localStorage.getItem("kingshot-player-profile") || "{}");
-  myRequests.innerHTML = "";
+  const profile = getProfile();
+  const wrap = $("myRequests");
+  wrap.innerHTML = "";
 
   if (!profile.playerId) {
-    myRequests.innerHTML = `<div class="empty-admin">Your requests will appear here after you submit your first one.</div>`;
+    wrap.innerHTML = `<div class="empty-admin">Save your KvK profile, then your requests will appear here.</div>`;
     return;
   }
 
   const mine = state.requests
     .filter(r => r.playerId === profile.playerId && r.status !== "withdrawn")
-    .sort((a,b) => a.day.localeCompare(b.day) || a.priority - b.priority);
+    .sort((a, b) => a.createdAt - b.createdAt);
 
   if (!mine.length) {
-    myRequests.innerHTML = `<div class="empty-admin">No active requests.</div>`;
+    wrap.innerHTML = `<div class="empty-admin">No active requests yet.</div>`;
     return;
   }
 
   mine.forEach(req => {
-    let info = null;
-    for (const day of Object.keys(DAY_CONFIG)) {
-      for (let i = 0; i < DAY_CONFIG[day].slots; i++) {
-        const candidate = slotInfo(day, i);
-        if (candidate.key === req.slotKey && day === req.day) { info = candidate; break; }
-      }
-      if (info) break;
-    }
-
     const item = document.createElement("div");
     item.className = "mine-item";
     item.innerHTML = `
-      <span class="choice">${ordinal(req.priority)}</span>
+      <span class="alliance">${req.alliance}</span>
       <div>
         <strong>${DAY_CONFIG[req.day].label}</strong>
-        <div class="meta">${info ? info.fullDisplay : req.slotKey} · ${req.role}</div>
+        <div class="meta">${findDisplayForRequest(req)} · ${req.role}</div>
       </div>
       <span class="${req.status === "confirmed" ? "status confirmed" : "status pending"}">
         ${req.status === "confirmed" ? "✓ Confirmed" : "Pending"}
       </span>`;
-    myRequests.appendChild(item);
+    wrap.appendChild(item);
   });
 }
 
 $("adminToggle").addEventListener("click", () => {
   adminMode = !adminMode;
+  selectedKeys.clear();
   $("adminToggle").textContent = adminMode ? "Exit admin view" : "Admin view";
   render();
 });
+
 $("adminClose").addEventListener("click", () => $("adminDialog").close());
 
 document.querySelectorAll(".day-tab").forEach(btn => {
@@ -430,20 +492,22 @@ document.querySelectorAll(".day-tab").forEach(btn => {
     document.querySelectorAll(".day-tab").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentDay = btn.dataset.day;
+    selectedKeys.clear();
     render();
   });
 });
 
 $("pointsToggle").addEventListener("click", () => {
-  const pc = $("pointsContent");
-  pc.hidden = !pc.hidden;
-  $("pointsArrow").textContent = pc.hidden ? "›" : "⌄";
+  const content = $("pointsContent");
+  content.hidden = !content.hidden;
+  $("pointsArrow").textContent = content.hidden ? "›" : "⌄";
 });
 
 $("clearMine").addEventListener("click", () => {
   if (!confirm("Clear your locally saved test profile and all locally stored planner data?")) return;
-  localStorage.removeItem("kingshot-player-profile");
+  localStorage.removeItem(PROFILE_STORE);
   localStorage.removeItem(STORE);
+  selectedKeys.clear();
   render();
 });
 
