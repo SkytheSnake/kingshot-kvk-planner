@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css?v=20260810-complete-v5">
+  <link rel="stylesheet" href="style.css?v=20260810-complete-v6">
 
   <link rel="icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -49,11 +49,11 @@
       <div id="profileResources" class="profile-resources" hidden>
         <div class="profile-resources-title">Resources</div>
         <div class="profile-resource-grid">
-          <div><span>Truegold</span><strong id="profileTruegold">0</strong></div>
-          <div><span>General</span><strong id="profileGeneral">0h</strong></div>
-          <div><span>Research</span><strong id="profileResearch">0h</strong></div>
-          <div><span>Training</span><strong id="profileTraining">0h</strong></div>
-          <div><span>Construction</span><strong id="profileConstruction">0h</strong></div>
+          <div class="profile-resource-item profile-resource-item-wide"><span><img src="resource-truegold.png" alt="Truegold" class="resource-icon">Truegold</span><strong id="profileTruegold">0</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-general.png" alt="General speed up" class="resource-icon">General</span><strong id="profileGeneral">0h</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-research.png" alt="Research speed up" class="resource-icon">Research</span><strong id="profileResearch">0h</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-training.png" alt="Training speed up" class="resource-icon">Training</span><strong id="profileTraining">0h</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-construction.png" alt="Construction speed up" class="resource-icon">Construction</span><strong id="profileConstruction">0h</strong></div>
         </div>
       </div>
 
@@ -175,11 +175,11 @@
 
       <div class="resource-box">
         <h3>Resource Snapshot</h3>
-        <label><span>🏆 <span data-i18n="truegold">Truegold</span></span><input id="truegold" type="number" min="0" step="1" value="0"></label>
-        <label><span>💨 <span data-i18n="general">General Speed Up (Hours)</span></span><input id="general" type="number" min="0" step="0.5" value="0"></label>
-        <label><span>📘 <span data-i18n="research">Research Speed Up (Hours)</span></span><input id="research" type="number" min="0" step="0.5" value="0"></label>
-        <label><span>⚔️ <span data-i18n="training">Training Speed Up (Hours)</span></span><input id="training" type="number" min="0" step="0.5" value="0"></label>
-        <label><span>🏗️ <span data-i18n="construction">Construction Speed Up (Hours)</span></span><input id="construction" type="number" min="0" step="0.5" value="0"></label>
+        <label><span><img src="resource-truegold.png" alt="Truegold" class="resource-icon resource-icon-inline"> <span data-i18n="truegold">Truegold</span></span><input id="truegold" type="number" min="0" step="1" value="0"></label>
+        <label><span><img src="resource-general.png" alt="General speed up" class="resource-icon resource-icon-inline"> <span data-i18n="general">General Speed Up (Hours)</span></span><input id="general" type="number" min="0" step="0.5" value="0"></label>
+        <label><span><img src="resource-research.png" alt="Research speed up" class="resource-icon resource-icon-inline"> <span data-i18n="research">Research Speed Up (Hours)</span></span><input id="research" type="number" min="0" step="0.5" value="0"></label>
+        <label><span><img src="resource-training.png" alt="Training speed up" class="resource-icon resource-icon-inline"> <span data-i18n="training">Training Speed Up (Hours)</span></span><input id="training" type="number" min="0" step="0.5" value="0"></label>
+        <label><span><img src="resource-construction.png" alt="Construction speed up" class="resource-icon resource-icon-inline"> <span data-i18n="construction">Construction Speed Up (Hours)</span></span><input id="construction" type="number" min="0" step="0.5" value="0"></label>
       </div>
     </div>
 
@@ -194,9 +194,9 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-complete-v5"></script>
-<script src="translations.js?v=20260810-complete-v5"></script>
-<script src="app.js?v=20260810-complete-v5"></script>
-  <script src="pwa-init.js?v=20260810-complete-v5"></script>
+<script src="config.js?v=20260810-complete-v6"></script>
+<script src="translations.js?v=20260810-complete-v6"></script>
+<script src="app.js?v=20260810-complete-v6"></script>
+  <script src="pwa-init.js?v=20260810-complete-v6"></script>
 </body>
 </html>

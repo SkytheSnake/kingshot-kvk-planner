@@ -187,3 +187,18 @@ The website itself is also now tolerant of legacy duplicate rows, so it won't cr
 Do not rerun the full master SQL on your existing database.
 
 Cache version: `20260810-complete-v5`
+
+
+## v6 Kingshot resource icons
+
+- Added the provided Kingshot resource icons for:
+  - Truegold
+  - General speed ups
+  - Research speed ups
+  - Training speed ups
+  - Construction speed ups
+- Icons are now used in the **My KvK Profile** popup resource form.
+- Icons are also shown in the **Your Profile** resource summary card.
+- Source icons were cleaned up and upscaled for clearer UI use.
+
+Cache version: `20260810-complete-v6`
