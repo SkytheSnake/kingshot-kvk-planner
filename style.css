@@ -357,3 +357,47 @@ input,select,textarea,dialog,.card,
   .left-rail{display:flex}
   .day-tabs-dated{grid-template-columns:1fr}
 }
+
+
+/* =========================================================
+   BLUE THEME
+   ========================================================= */
+html[data-theme="blue"]{
+  --bg:#05080c;
+  --panel:#071019;
+  --panel2:#0a1420;
+  --border:#18344d;
+  --text:#edf7ff;
+  --muted:#8da7bc;
+
+  --accent:#419ee8;
+  --accent-dark:#255b8b;
+  --accent-soft:#c2e8ff;
+  --accent-rgb:65,158,232;
+
+  --accent-border:#337eb9;
+  --accent-deep:#244f74;
+  --accent-side:#3277ad;
+
+  --good:#68d0a2;
+  --amber:#e0b655;
+  --danger:#da748b;
+}
+
+html[data-theme="blue"] body{
+  background:
+    radial-gradient(circle at 18% -8%,rgba(65,158,232,.16),transparent 31%),
+    linear-gradient(rgba(65,158,232,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(65,158,232,.014) 1px,transparent 1px),
+    #05080c;
+  background-size:auto,32px 32px,32px 32px,auto;
+}
+
+html[data-theme="blue"] .topbar{
+  background:
+    linear-gradient(180deg,rgba(65,158,232,.13),rgba(5,8,12,.96));
+}
+
+html[data-theme="blue"] .theme-dot[data-theme-choice="blue"]{
+  background:#419ee8;
+}
