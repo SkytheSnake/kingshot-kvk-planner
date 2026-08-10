@@ -429,3 +429,49 @@ input,select,textarea,dialog,.card,
   .pwa-splash-card{padding:24px 18px;border-radius:18px}
   .pwa-splash-title{font-size:22px}
 }
+
+
+/* Footer install area */
+.planner-footer{
+  max-width:1380px;
+  margin:0 auto 28px;
+  padding:0 14px;
+}
+.footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 16px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:
+    linear-gradient(180deg,rgba(var(--accent-rgb),.05),transparent 52%),
+    var(--panel);
+  box-shadow:0 10px 24px rgba(0,0,0,.18);
+}
+.footer-inner strong{
+  display:block;
+  color:var(--accent-soft);
+  font-family:"Courier New",ui-monospace,monospace;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.footer-inner small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+}
+.footer-install-btn{
+  flex:0 0 auto;
+  min-width:150px;
+}
+@media(max-width:700px){
+  .footer-inner{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .footer-install-btn{
+    width:100%;
+  }
+}

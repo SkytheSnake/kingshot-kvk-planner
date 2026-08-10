@@ -120,3 +120,11 @@ If your current database is already working, **do not repeatedly run migrations 
 ## Current release cache version
 
 `20260810-complete-release`
+
+
+## v2 presentation tweak
+
+- Profile/resource popup is delayed by 1.8 seconds so the splash screen can be seen first.
+- Install App / Add to Home Screen button has been moved from the top header to a dedicated footer section at the bottom of the website.
+
+Cache version: `20260810-complete-v2`

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css?v=20260810-complete-release">
+  <link rel="stylesheet" href="style.css?v=20260810-complete-v2">
 
   <link rel="icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -31,8 +31,6 @@
   <div class="top-actions compact-actions">
     <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option></select>
     <select id="themeSelect" class="theme-select hidden-theme-select" aria-label="Theme"><option value="pink">Pink</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="green">Green</option><option value="blue">Blue</option></select>
-    
-    <button id="installAppBtn" class="secondary install-btn" type="button" hidden>Install App</button>
     <a class="secondary button-link" href="admin.html">Admin Login</a>
   </div>
 </header>
@@ -130,6 +128,17 @@
   </section>
 </main>
 
+  <footer class="planner-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>Install the KvK Planner</strong>
+        <small>Add it to your phone or desktop for quick access.</small>
+      </div>
+      <button id="installAppBtn" class="primary install-btn footer-install-btn" type="button" hidden>Install App</button>
+    </div>
+  </footer>
+
+
 <dialog id="profileDialog">
   <form id="profileForm">
     <button type="button" class="close-btn" data-close="profileDialog">×</button>
@@ -175,7 +184,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js?v=20260810-complete-release"></script>
 <script src="translations.js?v=20260810-complete-release"></script>
-<script src="app.js?v=20260810-complete-release"></script>
-  <script src="pwa-init.js"></script>
+<script src="app.js?v=20260810-complete-v2"></script>
+  <script src="pwa-init.js?v=20260810-complete-v2"></script>
 </body>
 </html>

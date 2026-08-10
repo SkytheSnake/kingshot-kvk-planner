@@ -163,6 +163,8 @@ let myRequests = [];
 let publicActivity = [];
 let daySettings = [];
 let countdownTimer = null;
+let profilePopupTimer = null;
+const PROFILE_POPUP_DELAY_MS = 1800;
 
 const esc = value => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
@@ -393,13 +395,24 @@ function updateProfileGate(){
 
   const dialog = $("profileDialog");
 
+  if(profilePopupTimer){
+    clearTimeout(profilePopupTimer);
+    profilePopupTimer = null;
+  }
+
   if(!loggedIn){
-    if(dialog && !dialog.open) openProfile(false);
+    if(dialog && !dialog.open){
+      profilePopupTimer = setTimeout(() => {
+        if(!profile && dialog && !dialog.open) openProfile(false);
+      }, PROFILE_POPUP_DELAY_MS);
+    }
     return;
   }
 
   if(needsResources && dialog && !dialog.open){
-    openProfile(true, true);
+    profilePopupTimer = setTimeout(() => {
+      if(profile?.resource_snapshot_required && dialog && !dialog.open) openProfile(true, true);
+    }, PROFILE_POPUP_DELAY_MS);
   }
 }
 
