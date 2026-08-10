@@ -128,3 +128,12 @@ If your current database is already working, **do not repeatedly run migrations 
 - Install App / Add to Home Screen button has been moved from the top header to a dedicated footer section at the bottom of the website.
 
 Cache version: `20260810-complete-v2`
+
+
+## v3 splash/profile timing update
+
+- Profile/resource popup now waits **3 seconds** before opening.
+- Splash branding simplified to **1423 KvK Planner**.
+- Removed the splash tagline.
+
+Cache version: `20260810-complete-v3`

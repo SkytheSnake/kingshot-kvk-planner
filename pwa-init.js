@@ -17,8 +17,7 @@
     splash.innerHTML = `
       <div class="pwa-splash-card">
         <img class="pwa-splash-icon" src="icon-192.png" alt="KvK Planner icon">
-        <h2 class="pwa-splash-title">Kingshot KvK Planner</h2>
-        <p class="pwa-splash-subtitle">Plan • Coordinate • Win</p>
+        <h2 class="pwa-splash-title">1423 KvK Planner</h2>
         <div class="pwa-splash-loader"><span></span></div>
       </div>`;
     document.body.appendChild(splash);

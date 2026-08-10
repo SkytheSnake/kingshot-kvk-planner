@@ -164,7 +164,7 @@ let publicActivity = [];
 let daySettings = [];
 let countdownTimer = null;
 let profilePopupTimer = null;
-const PROFILE_POPUP_DELAY_MS = 1800;
+const PROFILE_POPUP_DELAY_MS = 3000;
 
 const esc = value => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
