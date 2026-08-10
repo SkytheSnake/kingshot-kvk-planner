@@ -16,25 +16,49 @@ function roleText(day=currentDay){return t(DAYS[day].role)}
 function titleText(day){return t(`${day}_title`)}
 function dayText(day){return t(day)}
 function fillLanguageSelect(){const s=$("languageSelect");s.value=I.current;s.onchange=()=>I.set(s.value)}
+function setText(selector,value){const el=document.querySelector(selector);if(el)el.textContent=value}
 function applyStatic(){
   document.title=t("planner");
-  document.querySelector(".brand-block h1").textContent="⚔️ "+t("planner");
-  $("profileBtn").textContent=t("my_profile");
-  document.querySelector('a[href="admin.html"]').textContent=t("admin_login");
-  $("roleSmall").textContent=roleText();
-  document.querySelector(".info-bar strong").textContent=t("select_slots");
-  document.querySelector("#tipsToggle strong").textContent=t("points_tips");
-  document.querySelector("#lockedPanel > span").textContent="🔒 "+t("profile_gate");
-  $("lockedProfileBtn").textContent=t("complete_profile");
-  document.querySelector("#selectionPanel strong").textContent=t("choose_times");
-  document.querySelector("#selectionPanel p").textContent=t("choose_help");
-  $("submitBtn").textContent=t("submit");
-  document.querySelector(".my-requests .schedule-header strong").textContent=t("my_requests");
-  document.querySelector(".my-requests .schedule-header small").textContent=t("my_requests_help");
-  $("crossoverNote").textContent="🔁 "+t("crossover");
-  document.querySelectorAll(".day-tab").forEach(b=>{const d=b.dataset.day,sp=b.querySelector("span");sp.childNodes[0].textContent=titleText(d);sp.querySelector("small").textContent=dayText(d)});
+  setText(".brand-block h1","⚔️ "+t("planner"));
+  if($("profileBtn"))$("profileBtn").textContent=t("my_profile");
+  setText('a[href="admin.html"]',t("admin_login"));
+  if($("roleSmall"))$("roleSmall").textContent=roleText();
+  setText(".info-bar strong",t("select_slots"));
+  setText("#tipsToggle strong",t("points_tips"));
+
+  const locked=$("lockedPanel");
+  if(locked){
+    const lockedSpan=locked.querySelector(":scope > span");
+    if(lockedSpan){
+      lockedSpan.textContent="🔒 "+t("profile_gate");
+    }else{
+      // Compatibility with the earlier HTML version where this was a text node.
+      const btn=$("lockedProfileBtn");
+      const textNode=[...locked.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim());
+      if(textNode)textNode.textContent="🔒 "+t("profile_gate")+" ";
+      else if(btn)locked.insertBefore(document.createTextNode("🔒 "+t("profile_gate")+" "),btn);
+    }
+  }
+
+  if($("lockedProfileBtn"))$("lockedProfileBtn").textContent=t("complete_profile");
+  setText("#selectionPanel strong",t("choose_times"));
+  setText("#selectionPanel p",t("choose_help"));
+  if($("submitBtn"))$("submitBtn").textContent=t("submit");
+  setText(".my-requests .schedule-header strong",t("my_requests"));
+  setText(".my-requests .schedule-header small",t("my_requests_help"));
+  if($("crossoverNote"))$("crossoverNote").textContent="🔁 "+t("crossover");
+
+  document.querySelectorAll(".day-tab").forEach(b=>{
+    const d=b.dataset.day,sp=b.querySelector("span");
+    if(!sp)return;
+    const firstText=[...sp.childNodes].find(n=>n.nodeType===Node.TEXT_NODE);
+    if(firstText)firstText.textContent=titleText(d);
+    const small=sp.querySelector("small");
+    if(small)small.textContent=dayText(d);
+  });
+
   document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
-  document.querySelector(".resource-box h3").textContent=t("resources");
+  setText(".resource-box h3",t("resources"));
   document.querySelectorAll('[data-close="profileDialog"]').forEach(b=>{if(b.textContent.trim()!=="×")b.textContent=t("cancel")});
 }
 function banner(msg,kind=""){$("connectionBanner").textContent=msg;$("connectionBanner").className=`connection-banner ${kind}`}
@@ -44,7 +68,17 @@ async function loadProfile(){const {data,error}=await sb.from("player_profiles")
 async function loadData(){const a=await sb.from("appointments").select("slot_key,event_day,minister_role,player_name,alliance");if(a.error)throw a.error;appointments=a.data||[];if(profile){const r=await sb.from("slot_requests").select("id,slot_key,event_day,minister_role,status").eq("profile_id",profile.id);if(r.error)throw r.error;myRequests=r.data||[]}else myRequests=[]}
 function apFor(k){return appointments.find(a=>a.slot_key===k)||null}
 function mineFor(k){return myRequests.find(r=>r.slot_key===k&&["pending","confirmed"].includes(r.status))||null}
-function profileUI(){const ok=!!profile;$("profileStatus").textContent=ok?`✓ ${profile.alliance} · ${profile.player_name} · ID ${profile.player_id}`:t("profile_required");$("profileStatus").className=`profile-status ${ok?"complete":"incomplete"}`;$("lockedPanel").hidden=ok;$("selectionPanel").hidden=!ok;if(!ok&&!$("profileDialog").open)openProfile(false)}
+function profileUI(){
+  const ok=!!profile;
+  const status=$("profileStatus");
+  if(status){
+    status.textContent=ok?`✓ ${profile.alliance} · ${profile.player_name} · ID ${profile.player_id}`:t("profile_required");
+    status.className=`profile-status ${ok?"complete":"incomplete"}`;
+  }
+  if($("lockedPanel"))$("lockedPanel").hidden=ok;
+  if($("selectionPanel"))$("selectionPanel").hidden=!ok;
+  if(!ok&&$("profileDialog")&&!$("profileDialog").open)openProfile(false);
+}
 function render(){
   applyStatic();renderTips();
   $("roleTitle").textContent=`${DAYS[currentDay].icon} ${roleText()}`;
@@ -93,7 +127,19 @@ async function findProfile(){
   $("findProfileBtn").disabled=true;$("findProfileBtn").textContent=t("checking");
   try{
     const {data,error}=await sb.rpc("claim_player_profile",{p_player_id:id});if(error)throw error;
-    if(data){await loadProfile();await loadData();$("profileDialog").close();render();banner(`✓ ${t("welcome",{name:profile.player_name})}`,"ok");return}
+    if(data){
+      await loadProfile();
+      if(!profile){
+        const direct=await sb.from("player_profiles").select("*").eq("id",data).maybeSingle();
+        if(direct.error)throw direct.error;
+        profile=direct.data;
+      }
+      await loadData();
+      if($("profileDialog").open)$("profileDialog").close();
+      render();
+      banner(`✓ ${t("welcome",{name:profile.player_name})}`,"ok");
+      return
+    }
     $("profileDialogTitle").textContent=t("create_profile");$("profileIntro").textContent=t("create_intro");$("profileDetails").hidden=false;$("saveProfileBtn").hidden=false;$("findProfileBtn").hidden=true;$("playerId").disabled=true;status.textContent=t("new_id");status.className="lookup-status new";status.hidden=false;
   }catch(e){err.textContent=e.message;err.hidden=false}
   finally{$("findProfileBtn").disabled=false;$("findProfileBtn").textContent=t("continue")}

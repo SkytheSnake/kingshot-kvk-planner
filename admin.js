@@ -11,14 +11,30 @@ function roleText(d=currentDay){return t(DAYS[d].role)}
 function titleText(d){return t(`${d}_title`)}
 function dayText(d){return t(d)}
 function fillLanguageSelect(){const s=$("languageSelect");s.value=I.current;s.onchange=()=>I.set(s.value)}
+function setText(selector,value){const el=document.querySelector(selector);if(el)el.textContent=value}
 function applyStatic(){
-  document.title=t("admin_title");document.querySelector(".brand-block h1").textContent="👑 "+t("admin_title");document.querySelector(".brand-block p").textContent=t("private_dashboard");
-  document.querySelector('a[href="index.html"]').textContent="← "+t("player_planner");$("logoutBtn").textContent=t("logout");
-  document.querySelector("#adminLoginCard h2").textContent=t("admin_login_title");document.querySelector("#adminLoginCard p").textContent=t("admin_help");
-  $("loginIdentityLabel").textContent=t("username_email");$("loginPasswordLabel").textContent=t("password");document.querySelector("#loginForm .login-submit").textContent=t("login");
-  document.querySelector(".admin-welcome > span").textContent=t("private_data");$("reviewHelp").textContent=t("review");document.querySelector("#applicantDialog h2").textContent=t("slot_requests");
-  document.querySelectorAll(".day-tab").forEach(b=>{const d=b.dataset.day,sp=b.querySelector("span");sp.childNodes[0].textContent=titleText(d);sp.querySelector("small").textContent=dayText(d)});
-  $("adminCrossoverNote").textContent="🔁 "+t("crossover");
+  document.title=t("admin_title");
+  setText(".brand-block h1","👑 "+t("admin_title"));
+  setText(".brand-block p",t("private_dashboard"));
+  setText('a[href="index.html"]',"← "+t("player_planner"));
+  if($("logoutBtn"))$("logoutBtn").textContent=t("logout");
+  setText("#adminLoginCard h2",t("admin_login_title"));
+  setText("#adminLoginCard p",t("admin_help"));
+  if($("loginIdentityLabel"))$("loginIdentityLabel").textContent=t("username_email");
+  if($("loginPasswordLabel"))$("loginPasswordLabel").textContent=t("password");
+  setText("#loginForm .login-submit",t("login"));
+  setText(".admin-welcome > span",t("private_data"));
+  if($("reviewHelp"))$("reviewHelp").textContent=t("review");
+  setText("#applicantDialog h2",t("slot_requests"));
+  document.querySelectorAll(".day-tab").forEach(b=>{
+    const d=b.dataset.day,sp=b.querySelector("span");
+    if(!sp)return;
+    const firstText=[...sp.childNodes].find(n=>n.nodeType===Node.TEXT_NODE);
+    if(firstText)firstText.textContent=titleText(d);
+    const small=sp.querySelector("small");
+    if(small)small.textContent=dayText(d);
+  });
+  if($("adminCrossoverNote"))$("adminCrossoverNote").textContent="🔁 "+t("crossover");
 }
 async function checkAdmin(){const {data:{session}}=await sb.auth.getSession();if(!session||session.user.is_anonymous)return false;const {data,error}=await sb.from("admin_users").select("admin_role,display_name").eq("id",session.user.id).maybeSingle();if(error||!data)return false;admin=data;return true}
 function show(on){$("adminLoginCard").hidden=on;$("adminApp").hidden=!on;$("logoutBtn").hidden=!on;if(on){$("adminName").textContent=admin.display_name||"Admin";$("adminRole").textContent=admin.admin_role.toUpperCase()}}
