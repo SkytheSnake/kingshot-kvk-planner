@@ -8,35 +8,53 @@
 </head>
 <body>
 <header class="topbar">
-  <div><h1>⚔️ Kingshot KvK Planner</h1><p>PAR · VIK · KCB · FOR</p></div>
-  <div class="top-actions"><select id="languageSelect" class="language-select" aria-label="Language"></select>
+  <div class="brand-block"><h1>⚔️ Kingshot KvK Planner</h1><p>PAR · VIK · KCB · FOR</p></div>
+  <div class="top-actions">
+    <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option></select>
     <span id="profileStatus" class="profile-status incomplete">Profile required</span>
     <button id="profileBtn" class="secondary">My KvK Profile</button>
     <a class="secondary button-link" href="admin.html">Admin Login</a>
   </div>
 </header>
+
 <main>
   <nav class="day-tabs">
     <button class="day-tab active" data-day="monday">🏗️ <span>City Construction<small>Monday</small></span></button>
     <button class="day-tab" data-day="tuesday">📚 <span>Basic Skills<small>Tuesday</small></span></button>
     <button class="day-tab" data-day="thursday">🦸 <span>Hero Development<small>Thursday</small></span></button>
   </nav>
+
   <section id="connectionBanner" class="connection-banner">Connecting to shared planner…</section>
-  <section class="info-bar"><div><small id="roleSmall">Chief Minister</small><strong>Select 3–5 acceptable slots</strong></div><span>UTC</span></section>
+
+  <section class="info-bar">
+    <div><small id="roleSmall">Chief Minister</small><strong>Select 3–5 acceptable slots</strong></div>
+    <span>UTC</span>
+  </section>
+
   <section class="card">
     <button id="tipsToggle" class="card-toggle"><span>💡 <strong>Points Tips</strong></span><span id="tipsArrow">⌄</span></button>
     <div id="tipsPanel" class="tips-panel"></div>
   </section>
-  <section id="lockedPanel" class="locked-panel">🔒 Complete your KvK Profile before requesting minister slots.<button id="lockedProfileBtn" class="primary">Complete Profile</button></section>
+
+  <section id="lockedPanel" class="locked-panel">
+    <span>🔒 Complete your KvK Profile before requesting minister slots.</span>
+    <button id="lockedProfileBtn" class="primary">Complete Profile</button>
+  </section>
+
   <section id="selectionPanel" class="selection-panel" hidden>
     <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p></div>
     <div class="selection-controls"><span id="selectionCount">0 of 5 selected</span><button id="submitBtn" class="primary" disabled>Submit Requests</button></div>
   </section>
+
   <section class="card">
-    <div class="schedule-header"><div><strong id="roleTitle">🏛️ Chief Minister</strong><small id="scheduleSummary"></small></div><div class="badges"><span id="confirmedBadge" class="badge green">0 confirmed</span></div></div>
+    <div class="schedule-header">
+      <div><strong id="roleTitle">🏛️ Chief Minister</strong><small id="scheduleSummary"></small></div>
+      <div class="badges"><span id="confirmedBadge" class="badge green">0 confirmed</span></div>
+    </div>
     <div id="crossoverNote" class="note" hidden>🔁 Tuesday's first slot is the same Chief Minister appointment as Monday 23:45 → Tuesday 00:15.</div>
     <div id="slotList" class="slot-list"></div>
   </section>
+
   <section class="card my-requests">
     <div class="schedule-header"><div><strong>My Requests</strong><small>You can replace your choices for a day by selecting a new set of 3–5 times and submitting again.</small></div></div>
     <div id="myRequests"></div>
@@ -44,46 +62,48 @@
 </main>
 
 <dialog id="profileDialog">
-<form id="profileForm">
-  <button type="button" class="close-btn" data-close="profileDialog">×</button>
-  <h2 id="profileDialogTitle">Find your KvK Profile</h2>
-  <p id="profileIntro" class="muted">Enter your Kingshot Player ID. If you have used the planner before, your existing profile will load automatically.</p>
+  <form id="profileForm">
+    <button type="button" class="close-btn" data-close="profileDialog">×</button>
+    <h2 id="profileDialogTitle">Find your KvK Profile</h2>
+    <p id="profileIntro" class="muted">Enter your Kingshot Player ID. If you have used the planner before, your existing profile will load automatically.</p>
 
-  <label>Player ID
-    <div class="player-id-row">
-      <input id="playerId" required inputmode="numeric" placeholder="Player ID">
-      <button id="findProfileBtn" type="button" class="primary">Continue</button>
+    <label class="field-label"><span data-i18n="player_id">Player ID</span>
+      <div class="player-id-row">
+        <input id="playerId" required inputmode="numeric" placeholder="Player ID">
+        <button id="findProfileBtn" type="button" class="primary">Continue</button>
+      </div>
+    </label>
+
+    <div id="profileDetails" hidden>
+      <div class="two-col">
+        <label class="field-label"><span data-i18n="player_name">Player Name</span><input id="playerName" required placeholder="Current IGN"></label>
+        <label class="field-label"><span data-i18n="alliance">Alliance</span>
+          <select id="alliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select>
+        </label>
+      </div>
+
+      <div class="resource-box">
+        <h3>Resource Snapshot</h3>
+        <label><span>🏆 <span data-i18n="truegold">Truegold</span></span><input id="truegold" type="number" min="0" step="1" value="0"></label>
+        <label><span>💨 <span data-i18n="general">General Speed Up (Hours)</span></span><input id="general" type="number" min="0" step="0.5" value="0"></label>
+        <label><span>📘 <span data-i18n="research">Research Speed Up (Hours)</span></span><input id="research" type="number" min="0" step="0.5" value="0"></label>
+        <label><span>⚔️ <span data-i18n="training">Training Speed Up (Hours)</span></span><input id="training" type="number" min="0" step="0.5" value="0"></label>
+        <label><span>🏗️ <span data-i18n="construction">Construction Speed Up (Hours)</span></span><input id="construction" type="number" min="0" step="0.5" value="0"></label>
+      </div>
     </div>
-  </label>
 
-  <div id="profileDetails" hidden>
-    <div class="two-col">
-      <label>Player Name<input id="playerName" required placeholder="Current IGN"></label>
-      <label>Alliance<select id="alliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select></label>
+    <div id="profileLookupStatus" class="lookup-status" hidden></div>
+    <div id="profileError" class="form-error" hidden></div>
+    <div class="dialog-actions">
+      <button type="button" class="secondary" data-close="profileDialog">Cancel</button>
+      <button id="saveProfileBtn" type="submit" class="primary" hidden>Save Profile</button>
     </div>
-
-    <div class="resource-box">
-      <h3>Resource Snapshot</h3>
-      <label>🏆 Truegold <input id="truegold" type="number" min="0" step="1" value="0"></label>
-      <label>💨 General Speed Up (Hours) <input id="general" type="number" min="0" step="0.5" value="0"></label>
-      <label>📘 Research Speed Up (Hours) <input id="research" type="number" min="0" step="0.5" value="0"></label>
-      <label>⚔️ Training Speed Up (Hours) <input id="training" type="number" min="0" step="0.5" value="0"></label>
-      <label>🏗️ Construction Speed Up (Hours) <input id="construction" type="number" min="0" step="0.5" value="0"></label>
-    </div>
-  </div>
-
-  <div id="profileLookupStatus" class="lookup-status" hidden></div>
-  <div id="profileError" class="form-error" hidden></div>
-
-  <div class="dialog-actions">
-    <button type="button" class="secondary" data-close="profileDialog">Cancel</button>
-    <button id="saveProfileBtn" type="submit" class="primary" hidden>Save Profile</button>
-  </div>
-</form>
+  </form>
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script><script src="translations.js"></script>
+<script src="config.js"></script>
+<script src="translations.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
