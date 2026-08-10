@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kingshot KvK Planner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="brand">⚔️ Sky</div>
+      <div class="kingdom">Kingshot KvK Planner</div>
+    </div>
+    <div class="alliance-pill">CRN</div>
+  </header>
+
+  <main class="container">
+    <section class="tabs" aria-label="KvK days">
+      <button class="day-tab active" data-day="monday">
+        <span class="emoji">🏗️</span>
+        <strong>City Construction</strong>
+        <small>Monday</small>
+      </button>
+
+      <button class="day-tab" data-day="tuesday">
+        <span class="emoji">📚</span>
+        <strong>Basic Skills</strong>
+        <small>Tuesday</small>
+      </button>
+
+      <button class="day-tab" data-day="thursday">
+        <span class="emoji">🦸</span>
+        <strong>Hero Development</strong>
+        <small>Thursday</small>
+      </button>
+    </section>
+
+    <section class="notice">
+      <div>
+        <small>Booking information</small>
+        <strong>30-minute Chief Minister slots</strong>
+      </div>
+      <span class="notice-pill">UTC</span>
+    </section>
+
+    <section class="points-card">
+      <button class="points-toggle" id="pointsToggle">
+        <span>💡 <strong>Points Tips</strong></span>
+        <span id="pointsArrow">⌄</span>
+      </button>
+      <div class="points-content" id="pointsContent">
+        <div class="tip-group">
+          <h4>✅ GREAT FOR POINTS</h4>
+          <div class="chips">
+            <span>Truegold</span><span>Construction speed up</span>
+            <span>Intel missions</span><span>Master skills</span>
+          </div>
+        </div>
+        <div class="tip-group">
+          <h4>🟧 OK FOR POINTS</h4>
+          <div class="chips amber">
+            <span>Charms</span><span>Research speed up</span>
+          </div>
+        </div>
+        <div class="tip-group muted">
+          <h4>⛔ SKIP TODAY</h4>
+          <div class="chips muted-chips">
+            <span>Troop speed up</span><span>Roulette</span><span>Shards</span>
+            <span>Gather rss</span><span>Level up pets</span><span>Refinement pets</span>
+            <span>Forgehammer</span><span>Widgets</span><span>Mithril</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="minister-card">
+      <div class="minister-header">
+        <div>
+          <div class="minister-title">🏛️ Chief Minister</div>
+          <div class="minister-subtitle" id="slotSummary"></div>
+        </div>
+        <div class="header-badges">
+          <span class="confirmed-count" id="confirmedCount">0 booked</span>
+        </div>
+      </div>
+
+      <div class="carryover-note" id="carryoverNote" hidden>
+        🔁 This first Tuesday slot is the same booking as Monday 23:45–00:15.
+      </div>
+
+      <div class="slots" id="slots"></div>
+    </section>
+  </main>
+
+  <dialog id="bookingDialog">
+    <form method="dialog" id="bookingForm">
+      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+      <h2>Book Chief Minister</h2>
+      <p class="dialog-slot" id="dialogSlot"></p>
+
+      <label>
+        Player name
+        <input id="playerName" maxlength="30" autocomplete="off" required />
+      </label>
+
+      <label>
+        Alliance
+        <input id="allianceName" maxlength="8" value="CRN" autocomplete="off" />
+      </label>
+
+      <div class="dialog-actions">
+        <button type="button" class="danger-btn" id="deleteBooking" hidden>Remove booking</button>
+        <button type="button" class="secondary-btn" id="cancelBooking">Cancel</button>
+        <button type="submit" class="primary-btn">Save booking</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
