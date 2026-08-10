@@ -65,7 +65,7 @@ function renderApplicants(){
 }
 async function award(id){const {error}=await sb.rpc("award_slot",{p_request_id:id});if(error){alert(error.message);return}await load();renderApplicants()}
 async function reject(id){const {error}=await sb.from("slot_requests").update({status:"rejected"}).eq("id",id);if(error){alert(error.message);return}await load();renderApplicants()}
-fillLanguageSelect();applyStatic();window.addEventListener("kvk-language-changed",()=>{applyStatic();if(!$("adminApp").hidden)render()});
+initTheme();fillLanguageSelect();applyStatic();window.addEventListener("kvk-language-changed",()=>{applyStatic();if(!$("adminApp").hidden)render()});
 $("loginForm").onsubmit=async e=>{
   e.preventDefault();$("loginError").hidden=true;
   const raw=$("loginIdentity").value.trim();

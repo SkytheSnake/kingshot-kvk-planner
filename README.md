@@ -1,40 +1,38 @@
-# Kingshot KvK Planner — Hotfix 20260810-1236
+# Kingshot KvK Planner — Theme Selector Update
 
-This fixes the issue where the app showed:
+Adds a colour-theme dropdown beside the language selector on both the player planner and admin page.
 
-`Cannot set properties of null (setting 'textContent')`
+Themes:
+- Pink
+- Purple
+- Teal
+- Green
 
-and stopped before rendering any slots.
+The selected theme is saved in the browser and stays selected on future visits.
 
-It also fixes the profile-gate sections appearing at the same time. CSS now forces `[hidden]` sections to stay hidden.
+This update keeps all existing functionality:
+- profile gate
+- Player ID recovery
+- shared Supabase bookings
+- 3–5 slot requests
+- translations
+- admin dashboard
+- retro dark styling
 
-## What should now happen
+## Upload to GitHub
 
-Before a profile is loaded:
-- Profile status says Profile Required.
-- The Complete Profile gate is visible.
-- The slot selection controls are hidden.
-- The schedule slots themselves are still visible.
-
-After an existing Player ID is entered or a new profile is saved:
-- Profile status changes to alliance · player name · Player ID.
-- The Complete Profile gate disappears.
-- The 3–5 selection controls appear.
-- Existing profile/resources are loaded.
-- All 49 slots render normally.
-
-## Upload
-
-Replace ALL current site files with these versions:
+Replace:
 - index.html
 - admin.html
 - style.css
-- config.js
-- translations.js
 - app.js
 - admin.js
 - README.md
 
-The HTML uses cache-busting query strings so GitHub Pages should not mix old JavaScript with new HTML.
+You can keep your current:
+- config.js
+- translations.js
+
+The HTML has cache-busting version `20260810-1247-theme` to avoid GitHub Pages serving mixed old/new files.
 
 No Supabase changes are needed.

@@ -325,3 +325,168 @@ input:focus,select:focus{outline:none;border-color:#b75c87;box-shadow:0 0 0 2px 
   .player-id-row .primary{width:100%}
   .resource-box label{grid-template-columns:1fr 82px}
 }
+
+
+/* =========================================================
+   COLOUR THEME SWITCHER
+   ========================================================= */
+:root,
+html[data-theme="pink"]{
+  --accent:#e777a4;
+  --accent-dark:#a94e76;
+  --accent-soft:#f0a5c3;
+  --accent-rgb:231,119,164;
+  --accent-border:#b65c87;
+  --accent-deep:#63344a;
+  --accent-panel:#201724;
+  --accent-panel-2:#17111a;
+  --accent-badge-bg:#2c1721;
+  --accent-badge-border:#6e3b51;
+  --accent-badge-text:#ee9cbb;
+  --accent-side:#a64f76;
+}
+
+html[data-theme="purple"]{
+  --accent:#a984d8;
+  --accent-dark:#73549a;
+  --accent-soft:#cfb8ef;
+  --accent-rgb:169,132,216;
+  --accent-border:#8665ad;
+  --accent-deep:#49395f;
+  --accent-panel:#191525;
+  --accent-panel-2:#15131c;
+  --accent-badge-bg:#211a30;
+  --accent-badge-border:#574370;
+  --accent-badge-text:#d7c5ed;
+  --accent-side:#76599c;
+}
+
+html[data-theme="teal"]{
+  --accent:#62c6c8;
+  --accent-dark:#3d8588;
+  --accent-soft:#a7e5e6;
+  --accent-rgb:98,198,200;
+  --accent-border:#4d9fa1;
+  --accent-deep:#31595b;
+  --accent-panel:#111e20;
+  --accent-panel-2:#0f1719;
+  --accent-badge-bg:#123033;
+  --accent-badge-border:#356b6d;
+  --accent-badge-text:#9de1e3;
+  --accent-side:#4b9395;
+}
+
+html[data-theme="green"]{
+  --accent:#69d5ae;
+  --accent-dark:#438f75;
+  --accent-soft:#ade8d2;
+  --accent-rgb:105,213,174;
+  --accent-border:#4da282;
+  --accent-deep:#315e50;
+  --accent-panel:#111d19;
+  --accent-panel-2:#0e1714;
+  --accent-badge-bg:#102820;
+  --accent-badge-border:#356b58;
+  --accent-badge-text:#9fe4c9;
+  --accent-side:#4f9d80;
+}
+
+.theme-select{
+  background:#101019;
+  color:#f1eaf3;
+  border:1px solid #554266;
+  border-radius:5px;
+  padding:7px 9px;
+  max-width:125px;
+  font-weight:700;
+}
+
+/* Accent-driven elements */
+.primary{
+  border-color:var(--accent-soft) !important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.08),transparent 36%),
+    linear-gradient(180deg,var(--accent),var(--accent-dark)) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(50,10,35,.20),
+    0 4px 12px rgba(0,0,0,.2) !important;
+}
+
+.primary:hover:not(:disabled){
+  box-shadow:
+    inset 0 0 0 2px rgba(50,10,35,.16),
+    0 0 14px rgba(var(--accent-rgb),.14),
+    0 5px 14px rgba(0,0,0,.26) !important;
+}
+
+.day-tab.active{
+  background:
+    linear-gradient(180deg,rgba(var(--accent-rgb),.11),transparent 48%),
+    var(--accent-panel) !important;
+  border-color:var(--accent-border) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--accent-rgb),.08),
+    0 0 12px rgba(var(--accent-rgb),.06) !important;
+}
+
+.info-bar{
+  border-color:var(--accent-deep) !important;
+  background:
+    linear-gradient(90deg,rgba(var(--accent-rgb),.055),transparent 38%),
+    var(--accent-panel-2) !important;
+  box-shadow:inset 3px 0 0 var(--accent-side) !important;
+}
+
+.info-bar>span{
+  background:var(--accent-badge-bg) !important;
+  border-color:var(--accent-badge-border) !important;
+  color:var(--accent-badge-text) !important;
+}
+
+.card::before,
+.selection-panel::before,
+.locked-panel::before,
+.info-bar::before{
+  background:rgba(var(--accent-rgb),.48) !important;
+}
+
+.selection-panel{
+  background:
+    linear-gradient(90deg,rgba(var(--accent-rgb),.04),transparent 50%),
+    #12121d !important;
+}
+
+.schedule-header{
+  background:
+    linear-gradient(90deg,rgba(var(--accent-rgb),.035),transparent 50%),
+    #12121d !important;
+}
+
+.slot.selected{
+  background:
+    linear-gradient(90deg,rgba(var(--accent-rgb),.07),transparent 60%),
+    #17131d !important;
+  border-color:var(--accent-border) !important;
+  box-shadow:inset 3px 0 0 var(--accent),0 0 10px rgba(var(--accent-rgb),.05) !important;
+}
+
+.slot input{accent-color:var(--accent) !important}
+
+dialog{
+  background:
+    linear-gradient(180deg,rgba(var(--accent-rgb),.025),transparent 28%),
+    #11111c !important;
+  border-color:var(--accent-deep) !important;
+  box-shadow:
+    0 18px 55px rgba(0,0,0,.62),
+    0 0 0 1px rgba(var(--accent-rgb),.035) !important;
+}
+
+input:focus,select:focus{
+  border-color:var(--accent-border) !important;
+  box-shadow:0 0 0 2px rgba(var(--accent-rgb),.08) !important;
+}
+
+@media(max-width:700px){
+  .theme-select{max-width:110px}
+}

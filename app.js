@@ -2,6 +2,19 @@
 "use strict";
 const sb=window.supabase.createClient(window.KVK_CONFIG.supabaseUrl,window.KVK_CONFIG.supabaseKey);
 const I=window.KVK_I18N,t=(k,v)=>I.t(k,v),$=id=>document.getElementById(id);
+function initTheme(){
+  const saved=localStorage.getItem("kvkTheme")||"pink";
+  document.documentElement.dataset.theme=saved;
+  const s=$("themeSelect");
+  if(s){
+    s.value=saved;
+    s.onchange=()=>{
+      const theme=s.value;
+      document.documentElement.dataset.theme=theme;
+      localStorage.setItem("kvkTheme",theme);
+    };
+  }
+}
 const DAYS={
   monday:{role:"chief",icon:"🏛️",startDay:"Sunday",startMinute:1425,slotCount:49,tips:{good:["Truegold","Construction speed up","Intel missions","Master skills"],ok:["Charms","Research speed up"],skip:["Troop speed up","Roulette","Shards","Gather rss","Level up pets","Refinement pets","Forgehammer","Widgets","Mithril","Gov. gear","Master emblem","Manuscript"]}},
   tuesday:{role:"chief",icon:"🏛️",startDay:"Monday",startMinute:1425,slotCount:49,tips:{good:["Roulette","Shards","Gather rss","Master skills","Master emblem","Manuscript"],ok:["Truegold","Construction speed up","Research speed up"],skip:["Charms","Troop speed up","Intel missions","Level up pets","Refinement pets","Forgehammer","Widgets","Mithril","Gov. gear"]}},
@@ -158,7 +171,7 @@ async function submit(){
   selected.clear();await refresh();alert(t("requests_saved"));
 }
 async function refresh(){await loadProfile();await loadData();render()}
-fillLanguageSelect();window.addEventListener("kvk-language-changed",render);
+initTheme();fillLanguageSelect();window.addEventListener("kvk-language-changed",render);
 document.querySelectorAll(".day-tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".day-tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");currentDay=b.dataset.day;selected.clear();render()});
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 $("profileBtn").onclick=()=>openProfile(true);$("lockedProfileBtn").onclick=()=>openProfile(false);$("findProfileBtn").onclick=findProfile;$("profileForm").onsubmit=saveProfile;$("submitBtn").onclick=submit;
