@@ -1,78 +1,38 @@
-# Kingshot KvK Planner — Admin & 4-week cycle upgrade
+# Resource refresh fix
 
-This bundle adds the new admin and deadline features to the clean rebuild.
+This fixes the behaviour after **Reset KvK**.
 
-## New features
+## New behaviour
 
-### Manual admin bookings
-On the admin page, click any slot and choose **Add player manually**.
+After the owner resets KvK:
 
-You can enter:
-- Player ID
-- Player name
-- Alliance
-
-The player does not need to log into the planner. The admin booking is immediately confirmed.
-
-### Rejection log
-Rejecting an application now goes through a database function that automatically adds it to the admin **Rejection Log**.
-
-The log stores:
-- Player ID
-- Player name
-- Alliance
-- Day / slot
-- Rejection time
-- Optional reason
-- Whether someone has contacted them
-
-Admins can click **Mark contacted**.
-
-### Owner-only reset
-Only an `owner` admin sees the **Reset KvK** button.
-
-It requires typing `RESET`.
-
-The reset:
-- deletes appointments
-- deletes slot requests
-- clears rejection history
-- keeps player profiles/Player IDs
-- resets saved resource totals to zero so players provide a fresh snapshot for the next KvK
-
-### 4-week deadline cycle
-The cycle is anchored to this KvK beginning Monday 10 August 2026 and repeats every 28 days.
-
-Player application deadlines are always:
-- Monday appointments → Sunday 20:00 UTC
-- Tuesday appointments → Monday 20:00 UTC
-- Thursday appointments → Wednesday 20:00 UTC
-
-The UI disables requests after the deadline, and Supabase enforces the same deadline server-side.
-
-Admins can still manually assign players after a player deadline has closed.
+1. Appointments, requests and rejection history are cleared.
+2. Saved resource totals are reset to zero.
+3. Player IDs / names / alliances remain saved.
+4. Every saved player profile is marked as needing a fresh resource snapshot.
+5. When that player next enters their Player ID, the planner immediately opens their profile and asks them to update their resources.
+6. They cannot request appointment slots until the refreshed resource snapshot is saved.
+7. Saving the profile clears the refresh flag and unlocks slot requests.
 
 ## Required Supabase step
 
 Run:
 
-`supabase_admin_cycle_upgrade.sql`
+`supabase_resource_refresh_fix.sql`
 
-once in Supabase SQL Editor.
+once.
 
-It is a migration for the existing project; it does not delete your current data when installed.
+Because the reset has already been tested, that migration deliberately marks all currently saved profiles as needing a new resource snapshot.
 
 ## GitHub
 
 Replace:
 - index.html
-- admin.html
-- style.css
-- translations.js
 - app.js
-- admin.js
 - README.md
 
-Keep your current `config.js` if you prefer; the included one points to the same project.
+No changes are needed to admin.html/admin.js/style.css for this fix.
 
-Cache version: `20260810-1405-admincycle`
+A refreshed canonical master SQL file is also included for future reference.
+
+Cache version: 20260810-1428-resource-refresh

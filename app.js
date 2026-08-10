@@ -270,21 +270,34 @@ function renderTips(){
 
 function updateProfileGate(){
   const loggedIn = !!profile;
+  const needsResources = !!profile?.resource_snapshot_required;
   const status = $("profileStatus");
 
   if(status){
-    status.textContent = loggedIn
-      ? `✓ ${profile.alliance} · ${profile.player_name} · ID ${profile.player_id}`
-      : t("profile_required");
-    status.className = `profile-status ${loggedIn ? "complete" : "incomplete"}`;
+    if(!loggedIn){
+      status.textContent = t("profile_required");
+      status.className = "profile-status incomplete";
+    }else if(needsResources){
+      status.textContent = `⚠ ${profile.alliance} · ${profile.player_name} · UPDATE RESOURCES`;
+      status.className = "profile-status incomplete";
+    }else{
+      status.textContent = `✓ ${profile.alliance} · ${profile.player_name} · ID ${profile.player_id}`;
+      status.className = "profile-status complete";
+    }
   }
 
-  if($("lockedPanel")) $("lockedPanel").hidden = loggedIn;
-  if($("selectionPanel")) $("selectionPanel").hidden = !loggedIn;
+  if($("lockedPanel")) $("lockedPanel").hidden = loggedIn && !needsResources;
+  if($("selectionPanel")) $("selectionPanel").hidden = !loggedIn || needsResources;
+
+  const dialog = $("profileDialog");
 
   if(!loggedIn){
-    const dialog = $("profileDialog");
     if(dialog && !dialog.open) openProfile(false);
+    return;
+  }
+
+  if(needsResources && dialog && !dialog.open){
+    openProfile(true, true);
   }
 }
 
@@ -431,12 +444,14 @@ function fillProfileFields(data){
   $("construction").value = data?.construction_speedups ?? 0;
 }
 
-function openProfile(editExisting=true){
+function openProfile(editExisting=true, forceResourceRefresh=false){
   resetProfileDialog();
 
   if(profile && editExisting){
-    $("profileDialogTitle").textContent = t("my_profile");
-    $("profileIntro").textContent = t("edit_intro");
+    $("profileDialogTitle").textContent = forceResourceRefresh ? "Update your KvK resources" : t("my_profile");
+    $("profileIntro").textContent = forceResourceRefresh
+      ? "A new KvK cycle has started. Please enter your current resource totals before requesting appointments."
+      : t("edit_intro");
     $("playerId").value = profile.player_id;
     $("playerId").disabled = true;
     $("findProfileBtn").hidden = true;
@@ -524,7 +539,8 @@ async function saveProfile(event){
     general_speedups: Number($("general").value) || 0,
     research_speedups: Number($("research").value) || 0,
     training_speedups: Number($("training").value) || 0,
-    construction_speedups: Number($("construction").value) || 0
+    construction_speedups: Number($("construction").value) || 0,
+    resource_snapshot_required: false
   };
 
   if(!payload.player_name){
