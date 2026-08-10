@@ -1,180 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
     <div>
-      <div class="brand">⚔️ Sky</div>
-      <div class="kingdom">Kingshot KvK Planner</div>
+      <h1>Kingshot KvK Planner</h1>
+      <p>PAR · VIK · KCB · FOR</p>
     </div>
     <div class="top-actions">
-      <button id="profileButton" class="ghost-btn">My KvK profile</button>
-      <button id="adminToggle" class="ghost-btn">Admin view</button>
-      <span class="server-pill">PAR · VIK · KCB · FOR</span>
+      <button id="profileBtn" class="secondary">My KvK Profile</button>
+      <button id="adminBtn" class="secondary">Admin View</button>
     </div>
   </header>
 
-  <main class="container">
-    <section class="tabs" aria-label="KvK days">
-      <button class="day-tab active" data-day="monday">
-        <span class="emoji">🏗️</span>
-        <strong>City Construction</strong>
-        <small>Monday</small>
-      </button>
+  <main>
+    <nav class="day-tabs">
+      <button class="day-tab active" data-day="monday">🏗️ <span>City Construction<small>Monday</small></span></button>
+      <button class="day-tab" data-day="tuesday">📚 <span>Basic Skills<small>Tuesday</small></span></button>
+      <button class="day-tab" data-day="thursday">🦸 <span>Hero Development<small>Thursday</small></span></button>
+    </nav>
 
-      <button class="day-tab" data-day="tuesday">
-        <span class="emoji">📚</span>
-        <strong>Basic Skills</strong>
-        <small>Tuesday</small>
-      </button>
-
-      <button class="day-tab" data-day="thursday">
-        <span class="emoji">🦸</span>
-        <strong>Hero Development</strong>
-        <small>Thursday</small>
-      </button>
-    </section>
-
-    <section class="notice">
+    <section class="info-bar">
       <div>
-        <small id="roleLabel">Chief Minister</small>
+        <small id="roleSmall">Chief Minister</small>
         <strong>Select 3–5 acceptable slots</strong>
       </div>
-      <div class="notice-right">
-        <span class="notice-pill">UTC</span>
-        <span class="notice-pill subtle">Requests ≠ confirmed</span>
-      </div>
+      <span>UTC</span>
     </section>
 
-    <section class="points-card">
-      <button class="points-toggle" id="pointsToggle">
+    <section class="card">
+      <button id="tipsToggle" class="card-toggle">
         <span>💡 <strong>Points Tips</strong></span>
-        <span id="pointsArrow">⌄</span>
+        <span id="tipsArrow">⌄</span>
       </button>
-      <div class="points-content" id="pointsContent"></div>
+      <div id="tipsPanel" class="tips-panel"></div>
     </section>
 
-    <section class="selection-card" id="selectionCard">
+    <section id="selectionPanel" class="selection-panel">
       <div>
-        <strong>Select your available times</strong>
-        <small>Choose at least 3 and no more than 5. All selected times are treated equally.</small>
+        <strong>Choose the times you can accept</strong>
+        <p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p>
       </div>
-      <div class="selection-actions">
-        <span id="selectionCount" class="selection-count">0 of 5 selected</span>
-        <button id="submitSelections" class="primary-btn" disabled>Submit requests</button>
+      <div class="selection-controls">
+        <span id="selectionCount">0 of 5 selected</span>
+        <button id="submitBtn" class="primary" disabled>Submit Requests</button>
       </div>
     </section>
 
-    <section class="minister-card">
-      <div class="minister-header">
+    <section class="card">
+      <div class="schedule-header">
         <div>
-          <div class="minister-title" id="ministerTitle">🏛️ Chief Minister</div>
-          <div class="minister-subtitle" id="slotSummary"></div>
+          <strong id="roleTitle">🏛️ Chief Minister</strong>
+          <small id="scheduleSummary"></small>
         </div>
-        <div class="header-badges">
-          <span class="request-count" id="requestCount">0 requests</span>
-          <span class="confirmed-count" id="confirmedCount">0 confirmed</span>
+        <div class="badges">
+          <span id="pendingBadge" class="badge amber">0 requests</span>
+          <span id="confirmedBadge" class="badge green">0 confirmed</span>
         </div>
       </div>
 
-      <div class="carryover-note" id="carryoverNote" hidden>
-        🔁 Tuesday’s first slot is the same Chief Minister booking as Monday 23:45 → Tuesday 00:15.
+      <div id="crossoverNote" class="note" hidden>
+        🔁 Tuesday's first slot is the same Chief Minister appointment as Monday 23:45 → Tuesday 00:15.
       </div>
 
-      <div class="admin-banner" id="adminBanner" hidden>
-        👑 Admin view is on. Open any slot to compare applicants and award it.
+      <div id="adminNote" class="note admin-note" hidden>
+        👑 Admin View: click a slot to compare applicants and award it.
       </div>
 
-      <div class="slots" id="slots"></div>
+      <div id="slotList" class="slot-list"></div>
     </section>
 
-    <section class="my-requests-card">
-      <div class="section-heading">
+    <section class="card my-requests">
+      <div class="schedule-header">
         <div>
-          <strong>My requests</strong>
-          <small>Your selected backup times will disappear automatically once you are awarded a slot for that day.</small>
+          <strong>My Requests</strong>
+          <small>Once you receive a slot for a day, your other requests for that day are withdrawn automatically.</small>
         </div>
-        <button id="clearMine" class="ghost-btn small">Clear my test data</button>
       </div>
-      <div id="myRequests" class="my-requests-list"></div>
+      <div id="myRequests"></div>
     </section>
   </main>
 
   <dialog id="profileDialog">
-    <form method="dialog" id="profileForm">
-      <button class="dialog-close" value="cancel" aria-label="Close">×</button>
-      <h2>My KvK profile</h2>
-      <p class="dialog-slot">Enter these once. Your saved resources will be reused across Monday, Tuesday and Thursday.</p>
+    <form id="profileForm">
+      <button type="button" class="close-btn" data-close="profileDialog">×</button>
+      <h2>My KvK Profile</h2>
+      <p class="muted">Save this once. These resources will be reused for all of your slot requests.</p>
 
-      <div class="grid-2">
-        <label>
-          Player ID
-          <input id="profilePlayerId" inputmode="numeric" maxlength="20" placeholder="e.g. 123456789" required />
+      <div class="two-col">
+        <label>Player ID
+          <input id="playerId" required inputmode="numeric" placeholder="Player ID">
         </label>
-
-        <label>
-          Player name
-          <input id="profilePlayerName" maxlength="30" autocomplete="off" placeholder="Temporary until API lookup" required />
+        <label>Player Name
+          <input id="playerName" required placeholder="Current IGN">
         </label>
       </div>
 
-      <label>
-        Alliance
-        <select id="profileAlliance" required>
-          <option value="PAR">PAR</option>
-          <option value="VIK">VIK</option>
-          <option value="KCB">KCB</option>
-          <option value="FOR">FOR</option>
+      <label>Alliance
+        <select id="alliance" required>
+          <option>PAR</option>
+          <option>VIK</option>
+          <option>KCB</option>
+          <option>FOR</option>
         </select>
       </label>
 
-      <div class="resources-box">
-        <h3>Resource snapshot</h3>
-        <div class="resource-row">
-          <span>🏆 Truegold</span>
-          <input id="profileTruegold" type="number" min="0" step="1" value="0" />
-        </div>
-        <div class="resource-row">
-          <span>💨 General Speed Up (Hours)</span>
-          <input id="profileGeneral" type="number" min="0" step="0.5" value="0" />
-        </div>
-        <div class="resource-row">
-          <span>📘 Research Speed Up (Hours)</span>
-          <input id="profileResearch" type="number" min="0" step="0.5" value="0" />
-        </div>
-        <div class="resource-row">
-          <span>⚔️ Training Speed Up (Hours)</span>
-          <input id="profileTraining" type="number" min="0" step="0.5" value="0" />
-        </div>
-        <div class="resource-row">
-          <span>🏗️ Construction Speed Up (Hours)</span>
-          <input id="profileConstruction" type="number" min="0" step="0.5" value="0" />
-        </div>
+      <div class="resource-box">
+        <h3>Resource Snapshot</h3>
+        <label>🏆 Truegold <input id="truegold" type="number" min="0" step="1" value="0"></label>
+        <label>💨 General Speed Up (Hours) <input id="general" type="number" min="0" step="0.5" value="0"></label>
+        <label>📘 Research Speed Up (Hours) <input id="research" type="number" min="0" step="0.5" value="0"></label>
+        <label>⚔️ Training Speed Up (Hours) <input id="training" type="number" min="0" step="0.5" value="0"></label>
+        <label>🏗️ Construction Speed Up (Hours) <input id="construction" type="number" min="0" step="0.5" value="0"></label>
       </div>
 
-      <p class="helper">
-        In the live shared version, this profile will be stored in Supabase and linked to your Player ID. The Player ID will later be used for name updates if a reliable Kingshot lookup endpoint is available.
-      </p>
-
       <div class="dialog-actions">
-        <button type="button" class="secondary-btn" id="cancelProfile">Cancel</button>
-        <button type="submit" class="primary-btn">Save profile</button>
+        <button type="button" class="secondary" data-close="profileDialog">Cancel</button>
+        <button type="submit" class="primary">Save Profile</button>
       </div>
     </form>
   </dialog>
 
   <dialog id="adminDialog">
-    <div>
-      <button class="dialog-close" id="adminClose" aria-label="Close">×</button>
-      <h2>Slot requests</h2>
-      <p class="dialog-slot" id="adminSlotLabel"></p>
-      <div id="adminApplicants" class="applicant-list"></div>
-    </div>
+    <button type="button" class="close-btn" data-close="adminDialog">×</button>
+    <h2>Slot Requests</h2>
+    <p id="adminSlotLabel" class="muted"></p>
+    <div id="adminApplicants"></div>
   </dialog>
 
   <script src="script.js"></script>

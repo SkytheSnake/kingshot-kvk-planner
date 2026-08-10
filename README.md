@@ -1,63 +1,29 @@
-# Kingshot KvK Planner — v3
+# Kingshot KvK Planner — rebuilt version
 
-This version changes slot requesting to a checkbox/multi-select flow and saves player resources once in a reusable KvK profile.
+This version was rebuilt from scratch to avoid the issues in the previous prototype.
 
-## Main changes
-
-### 1. Select 3–5 slots
-Players no longer rank 1st/2nd/3rd choices.
-
-For each day they:
-- tick at least **3**
-- tick no more than **5**
-- submit all selected times together
-
-All selected times are treated equally as acceptable backup options.
-
-Confirmed/full slots are disabled.
-
-### 2. Saved KvK profile
-Players enter this once:
-- Player ID
-- Player name
-- Alliance
-- Truegold
-- General speed-ups
-- Research speed-ups
-- Training speed-ups
-- Construction speed-ups
-
-That resource snapshot is reused when requesting Monday, Tuesday and Thursday slots.
-
-### 3. Admin allocation
-Admin view still lets the King/Minister of Justice:
-- open a slot
-- compare applicants
-- see resource totals
-- award one player
-- reject requests
-
-When someone is awarded a slot for a day, their other pending requests for that same day are automatically withdrawn.
-
-## Alliances
-- PAR
-- VIK
-- KCB
-- FOR
-
-## Days
+## Features
 - Monday — City Construction — Chief Minister
 - Tuesday — Basic Skills — Chief Minister
 - Thursday — Hero Development — Noble Advisor
-
-Monday and Tuesday still share the Monday 23:45 → Tuesday 00:15 Chief Minister crossover slot.
+- 30-minute slots
+- Monday begins Sunday at 23:45 UTC
+- Monday 23:45 → Tuesday 00:15 is one linked Chief Minister slot and appears on Tuesday as the first slot
+- Players save one KvK profile and one resource snapshot
+- Alliances: PAR, VIK, KCB, FOR
+- Players select a minimum of 3 and maximum of 5 acceptable slots
+- Confirmed slots cannot be requested
+- Admin view compares all applicants for a slot
+- Awarding a player a slot removes their other pending requests for that same day
 
 ## Important
-This is still a browser-only prototype using localStorage.
+This is still a local browser prototype. Everyone will not share the same bookings until Supabase is connected.
 
-The next stage is:
-1. Supabase shared database
-2. proper admin authentication/permissions
-3. player profile storage
-4. Kingshot Player ID lookup if a reliable endpoint is available
-5. sign-up deadline/resource locking
+## Upload
+Replace the existing four files in your GitHub repository:
+- index.html
+- style.css
+- script.js
+- README.md
+
+Commit the changes and GitHub Pages should redeploy automatically.
