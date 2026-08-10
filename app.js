@@ -164,7 +164,9 @@ let publicActivity = [];
 let daySettings = [];
 let countdownTimer = null;
 let profilePopupTimer = null;
-const PROFILE_POPUP_DELAY_MS = 3000;
+let profileAutoPromptScheduled = false;
+let profileAutoPromptShown = false;
+const PROFILE_POPUP_DELAY_MS = 2000;
 
 const esc = value => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
@@ -367,6 +369,12 @@ function renderTips(){
   ).join("");
 }
 
+function formatResourceValue(value, suffix=""){
+  const n = Number(value) || 0;
+  const formatted = Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/,"");
+  return `${formatted}${suffix}`;
+}
+
 function updateProfileGate(){
   const loggedIn = !!profile;
   const needsResources = !!profile?.resource_snapshot_required;
@@ -385,33 +393,50 @@ function updateProfileGate(){
     }
   }
 
-  if($("profilePlayerId")) $("profilePlayerId").textContent=loggedIn?profile.player_id:"—";
-  if($("profilePlayerName")) $("profilePlayerName").textContent=loggedIn?profile.player_name:"—";
-  if($("profileAlliance")) $("profileAlliance").textContent=loggedIn?profile.alliance:"—";
-  if($("profileRailStatus")) $("profileRailStatus").textContent=!loggedIn?t("profile_required"):(needsResources?"Update resources":"Active");
+  if($("profilePlayerId")) $("profilePlayerId").textContent = loggedIn ? profile.player_id : "—";
+  if($("profilePlayerName")) $("profilePlayerName").textContent = loggedIn ? profile.player_name : "—";
+  if($("profileAlliance")) $("profileAlliance").textContent = loggedIn ? profile.alliance : "—";
+  if($("profileRailStatus")) $("profileRailStatus").textContent = !loggedIn
+    ? t("profile_required")
+    : (needsResources ? "Update resources" : "Complete");
+
+  const resources = $("profileResources");
+  if(resources){
+    resources.hidden = !loggedIn;
+    if(loggedIn){
+      $("profileTruegold").textContent = formatResourceValue(profile.truegold);
+      $("profileGeneral").textContent = formatResourceValue(profile.general_speedups, "h");
+      $("profileResearch").textContent = formatResourceValue(profile.research_speedups, "h");
+      $("profileTraining").textContent = formatResourceValue(profile.training_speedups, "h");
+      $("profileConstruction").textContent = formatResourceValue(profile.construction_speedups, "h");
+    }
+  }
 
   if($("lockedPanel")) $("lockedPanel").hidden = loggedIn && !needsResources;
   if($("selectionPanel")) $("selectionPanel").hidden = !loggedIn || needsResources;
 
   const dialog = $("profileDialog");
+  const shouldAutoPrompt = !loggedIn || needsResources;
 
-  if(profilePopupTimer){
-    clearTimeout(profilePopupTimer);
-    profilePopupTimer = null;
-  }
-
-  if(!loggedIn){
-    if(dialog && !dialog.open){
-      profilePopupTimer = setTimeout(() => {
-        if(!profile && dialog && !dialog.open) openProfile(false);
-      }, PROFILE_POPUP_DELAY_MS);
-    }
-    return;
-  }
-
-  if(needsResources && dialog && !dialog.open){
+  // Only auto-open once per page load. Closing it will not cause it to
+  // repeatedly reopen during schedule renders or deadline refreshes.
+  if(
+    shouldAutoPrompt &&
+    !profileAutoPromptShown &&
+    !profileAutoPromptScheduled &&
+    dialog &&
+    !dialog.open
+  ){
+    profileAutoPromptScheduled = true;
     profilePopupTimer = setTimeout(() => {
-      if(profile?.resource_snapshot_required && dialog && !dialog.open) openProfile(true, true);
+      profileAutoPromptScheduled = false;
+      profilePopupTimer = null;
+
+      const stillNeedsPrompt = !profile || !!profile.resource_snapshot_required;
+      if(!stillNeedsPrompt || dialog.open || profileAutoPromptShown) return;
+
+      profileAutoPromptShown = true;
+      openProfile(!!profile, !!profile?.resource_snapshot_required);
     }, PROFILE_POPUP_DELAY_MS);
   }
 }
@@ -616,6 +641,24 @@ async function findOrClaimProfile(){
       }
 
       await loadSharedData();
+
+      if(profile?.resource_snapshot_required){
+        // The user has already found their profile, so keep the same dialog
+        // open and move directly to the resource refresh form.
+        profileAutoPromptShown = true;
+        $("profileDialogTitle").textContent = "Update your KvK resources";
+        $("profileIntro").textContent = "Please enter your current resource totals before requesting appointments.";
+        $("playerId").value = profile.player_id;
+        $("playerId").disabled = true;
+        $("findProfileBtn").hidden = true;
+        $("profileDetails").hidden = false;
+        $("saveProfileBtn").hidden = false;
+        fillProfileFields(profile);
+        renderSchedule();
+        return;
+      }
+
+      profileAutoPromptShown = true;
       $("profileDialog").close();
       renderSchedule();
       setBanner(`✓ ${t("welcome",{name:profile.player_name})}`, "ok");
@@ -648,41 +691,93 @@ async function saveProfile(event){
 
   if($("profileDetails").hidden) return;
 
-  const payload = {
-    user_id: user.id,
-    player_id: profile?.player_id || $("playerId").value.trim(),
-    player_name: $("playerName").value.trim(),
-    alliance: $("alliance").value,
-    truegold: Number($("truegold").value) || 0,
-    general_speedups: Number($("general").value) || 0,
-    research_speedups: Number($("research").value) || 0,
-    training_speedups: Number($("training").value) || 0,
-    construction_speedups: Number($("construction").value) || 0,
-    resource_snapshot_required: false,
-    resource_updated_at: new Date().toISOString()
-  };
+  const playerName = $("playerName").value.trim();
+  const alliance = $("alliance").value;
+  const truegold = Number($("truegold").value) || 0;
+  const general = Number($("general").value) || 0;
+  const research = Number($("research").value) || 0;
+  const training = Number($("training").value) || 0;
+  const construction = Number($("construction").value) || 0;
 
-  if(!payload.player_name){
+  if(!playerName){
     errorBox.textContent = t("enter_name");
     errorBox.hidden = false;
     return;
   }
 
-  const query = profile
-    ? sb.from("player_profiles").update(payload).eq("id", profile.id).select().single()
-    : sb.from("player_profiles").insert(payload).select().single();
+  $("saveProfileBtn").disabled = true;
 
-  const { data, error } = await query;
+  try{
+    let data;
+    let error;
 
-  if(error){
-    errorBox.textContent = error.message;
+    if(profile){
+      // SECURITY DEFINER RPC avoids an RLS/session edge case that could leave
+      // resource_snapshot_required stuck on true after saving.
+      const result = await sb.rpc("save_player_profile", {
+        p_profile_id: profile.id,
+        p_player_name: playerName,
+        p_alliance: alliance,
+        p_truegold: truegold,
+        p_general_speedups: general,
+        p_research_speedups: research,
+        p_training_speedups: training,
+        p_construction_speedups: construction
+      });
+      data = result.data;
+      error = result.error;
+    }else{
+      const payload = {
+        user_id: user.id,
+        player_id: $("playerId").value.trim(),
+        player_name: playerName,
+        alliance,
+        truegold,
+        general_speedups: general,
+        research_speedups: research,
+        training_speedups: training,
+        construction_speedups: construction,
+        resource_snapshot_required: false,
+        resource_updated_at: new Date().toISOString()
+      };
+      const result = await sb.from("player_profiles").insert(payload).select().single();
+      data = result.data;
+      error = result.error;
+    }
+
+    if(error) throw error;
+
+    profile = Array.isArray(data) ? data[0] : data;
+
+    // Re-read from the database so the UI only considers the save complete
+    // once the persisted row confirms the snapshot flag was cleared.
+    await loadProfile();
+
+    if(!profile){
+      throw new Error("Your profile could not be reloaded after saving.");
+    }
+    if(profile.resource_snapshot_required){
+      throw new Error("Your resources were saved, but the KvK resource refresh was not marked complete. Please try again.");
+    }
+
+    profileAutoPromptShown = true;
+    if(profilePopupTimer){
+      clearTimeout(profilePopupTimer);
+      profilePopupTimer = null;
+    }
+    profileAutoPromptScheduled = false;
+
+    $("profileDialog").close();
+    await loadSharedData();
+    renderSchedule();
+    setBanner("✓ Profile and resources saved", "ok");
+  }catch(error){
+    console.error(error);
+    errorBox.textContent = error.message || "Unable to save your profile.";
     errorBox.hidden = false;
-    return;
+  }finally{
+    $("saveProfileBtn").disabled = false;
   }
-
-  profile = data;
-  $("profileDialog").close();
-  await refresh();
 }
 
 async function submitRequests(){

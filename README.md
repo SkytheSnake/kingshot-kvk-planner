@@ -137,3 +137,26 @@ Cache version: `20260810-complete-v2`
 - Removed the splash tagline.
 
 Cache version: `20260810-complete-v3`
+
+
+## v4 resource/profile fix
+
+Changes in this version:
+
+- Automatic profile/resource popup delay reduced to **2 seconds**.
+- Automatic popup is now **one-shot per page load**. If you close it, it will not keep reopening.
+- Existing players who enter their Player ID and need a resource refresh stay in the same popup and go straight to the resource form.
+- Resource saving now uses a dedicated Supabase RPC and verifies the saved row before closing the popup.
+- Saved resources are displayed directly in the **Your Profile** card.
+- Profile Status now reads **Complete** instead of Active once the resource snapshot is valid.
+- Service worker cache version bumped so browsers pick up the fix.
+
+### IMPORTANT — one small Supabase step
+
+Because the resource-save issue is database-facing as well as UI-facing, run this file **once** in the Supabase SQL Editor:
+
+`RUN-ONCE-resource-save-fix.sql`
+
+Do not rerun the full master SQL on your existing database. The master SQL included here has also been updated so it remains the canonical reference for future setups.
+
+Cache version: `20260810-complete-v4`

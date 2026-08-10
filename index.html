@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css?v=20260810-complete-v3">
+  <link rel="stylesheet" href="style.css?v=20260810-complete-v4">
 
   <link rel="icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -45,6 +45,18 @@
         <div><span>Alliance</span><strong id="profileAlliance">—</strong></div>
         <div><span>Profile Status</span><strong id="profileRailStatus">Required</strong></div>
       </div>
+
+      <div id="profileResources" class="profile-resources" hidden>
+        <div class="profile-resources-title">Resources</div>
+        <div class="profile-resource-grid">
+          <div><span>Truegold</span><strong id="profileTruegold">0</strong></div>
+          <div><span>General</span><strong id="profileGeneral">0h</strong></div>
+          <div><span>Research</span><strong id="profileResearch">0h</strong></div>
+          <div><span>Training</span><strong id="profileTraining">0h</strong></div>
+          <div><span>Construction</span><strong id="profileConstruction">0h</strong></div>
+        </div>
+      </div>
+
       <button id="profileBtn" class="primary wide-btn" type="button">My KvK Profile</button>
     </section>
 
@@ -182,9 +194,9 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-complete-release"></script>
-<script src="translations.js?v=20260810-complete-release"></script>
-<script src="app.js?v=20260810-complete-v3"></script>
-  <script src="pwa-init.js?v=20260810-complete-v3"></script>
+<script src="config.js?v=20260810-complete-v4"></script>
+<script src="translations.js?v=20260810-complete-v4"></script>
+<script src="app.js?v=20260810-complete-v4"></script>
+  <script src="pwa-init.js?v=20260810-complete-v4"></script>
 </body>
 </html>

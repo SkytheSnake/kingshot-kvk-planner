@@ -475,3 +475,48 @@ input,select,textarea,dialog,.card,
     width:100%;
   }
 }
+
+
+/* Resource summary inside player profile */
+.profile-resources{
+  margin:10px 0 12px;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.profile-resources-title{
+  margin-bottom:7px;
+  color:var(--accent-soft);
+  font:800 10px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.profile-resource-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px 8px;
+}
+.profile-resource-grid div{
+  min-width:0;
+  padding:7px 8px;
+  border:1px solid rgba(var(--accent-rgb),.18);
+  border-radius:7px;
+  background:rgba(var(--accent-rgb),.035);
+}
+.profile-resource-grid span{
+  display:block;
+  margin-bottom:2px;
+  color:var(--muted);
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.profile-resource-grid strong{
+  display:block;
+  color:var(--text);
+  font-size:12px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.profile-resource-grid div:first-child{
+  grid-column:1 / -1;
+}
