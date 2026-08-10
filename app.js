@@ -1,199 +1,579 @@
 (() => {
 "use strict";
-const sb=window.supabase.createClient(window.KVK_CONFIG.supabaseUrl,window.KVK_CONFIG.supabaseKey);
-const I=window.KVK_I18N,t=(k,v)=>I.t(k,v),$=id=>document.getElementById(id);
-function initTheme(){
-  const saved=localStorage.getItem("kvkTheme")||"pink";
-  document.documentElement.dataset.theme=saved;
-  const s=$("themeSelect");
-  if(s){
-    s.value=saved;
-    s.onchange=()=>{
-      const theme=s.value;
-      document.documentElement.dataset.theme=theme;
-      localStorage.setItem("kvkTheme",theme);
-    };
-  }
-}
-const DAYS={
-  monday:{role:"chief",icon:"🏛️",startDay:"Sunday",startMinute:1425,slotCount:49,tips:{good:["Truegold","Construction speed up","Intel missions","Master skills"],ok:["Charms","Research speed up"],skip:["Troop speed up","Roulette","Shards","Gather rss","Level up pets","Refinement pets","Forgehammer","Widgets","Mithril","Gov. gear","Master emblem","Manuscript"]}},
-  tuesday:{role:"chief",icon:"🏛️",startDay:"Monday",startMinute:1425,slotCount:49,tips:{good:["Roulette","Shards","Gather rss","Master skills","Master emblem","Manuscript"],ok:["Truegold","Construction speed up","Research speed up"],skip:["Charms","Troop speed up","Intel missions","Level up pets","Refinement pets","Forgehammer","Widgets","Mithril","Gov. gear"]}},
-  thursday:{role:"noble",icon:"👑",startDay:"Wednesday",startMinute:1425,slotCount:49,tips:{good:["Charms","Troop speed up","Gather rss"],ok:["Forgehammer","Widgets","Mithril"],skip:["Truegold","Construction speed up","Research speed up","Intel missions","Roulette","Shards","Level up pets","Refinement pets","Gov. gear","Master skills","Master emblem","Manuscript"]}}
-};
-const names=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-let currentDay="monday",selected=new Set(),user=null,profile=null,appointments=[],myRequests=[],publicActivity=[];
-const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-function tp(sd,sm,o){let d=names.indexOf(sd),m=sm+o;while(m>=1440){m-=1440;d=(d+1)%7}return{day:names[d],time:`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}}
-function slot(day,i){const c=DAYS[day],s=tp(c.startDay,c.startMinute,i*30),e=tp(c.startDay,c.startMinute,(i+1)*30);let key=`${day}-${i}`;if((day==="monday"&&i===48)||(day==="tuesday"&&i===0))key="chief-crossover";return{key,display:`${s.time}–${e.time}`,full:s.day===e.day?`${s.day} ${s.time}–${e.time}`:`${s.day} ${s.time} → ${e.day} ${e.time}`,cross:s.day!==e.day}}
-function roleText(day=currentDay){return t(DAYS[day].role)}
-function titleText(day){return t(`${day}_title`)}
-function dayText(day){return t(day)}
-function fillLanguageSelect(){const s=$("languageSelect");s.value=I.current;s.onchange=()=>I.set(s.value)}
-function setText(selector,value){const el=document.querySelector(selector);if(el)el.textContent=value}
-function applyStatic(){
-  document.title=t("planner");
-  setText(".brand-block h1","⚔️ "+t("planner"));
-  if($("profileBtn"))$("profileBtn").textContent=t("my_profile");
-  setText('a[href="admin.html"]',t("admin_login"));
-  if($("roleSmall"))$("roleSmall").textContent=roleText();
-  setText(".info-bar strong",t("select_slots"));
-  setText("#tipsToggle strong",t("points_tips"));
 
-  const locked=$("lockedPanel");
-  if(locked){
-    const lockedSpan=locked.querySelector(":scope > span");
-    if(lockedSpan){
-      lockedSpan.textContent="🔒 "+t("profile_gate");
-    }else{
-      // Compatibility with the earlier HTML version where this was a text node.
-      const btn=$("lockedProfileBtn");
-      const textNode=[...locked.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim());
-      if(textNode)textNode.textContent="🔒 "+t("profile_gate")+" ";
-      else if(btn)locked.insertBefore(document.createTextNode("🔒 "+t("profile_gate")+" "),btn);
+const sb = window.supabase.createClient(window.KVK_CONFIG.supabaseUrl, window.KVK_CONFIG.supabaseKey);
+const I = window.KVK_I18N;
+const t = (key, vars) => I.t(key, vars);
+const $ = id => document.getElementById(id);
+
+const DAYS = {
+  monday: {
+    roleKey: "chief", roleDb: "Chief Minister", icon: "🏛️",
+    startDay: "Sunday", startMinute: 23 * 60 + 45, slotCount: 49,
+    tips: {
+      good: ["Truegold", "Construction speed up", "Intel missions", "Master skills"],
+      ok: ["Charms", "Research speed up"],
+      skip: ["Troop speed up", "Roulette", "Shards", "Gather rss", "Level up pets", "Refinement pets", "Forgehammer", "Widgets", "Mithril", "Gov. gear", "Master emblem", "Manuscript"]
+    }
+  },
+  tuesday: {
+    roleKey: "chief", roleDb: "Chief Minister", icon: "🏛️",
+    startDay: "Monday", startMinute: 23 * 60 + 45, slotCount: 49,
+    tips: {
+      good: ["Roulette", "Shards", "Gather rss", "Master skills", "Master emblem", "Manuscript"],
+      ok: ["Truegold", "Construction speed up", "Research speed up"],
+      skip: ["Charms", "Troop speed up", "Intel missions", "Level up pets", "Refinement pets", "Forgehammer", "Widgets", "Mithril", "Gov. gear"]
+    }
+  },
+  thursday: {
+    roleKey: "noble", roleDb: "Noble Advisor", icon: "👑",
+    startDay: "Wednesday", startMinute: 23 * 60 + 45, slotCount: 49,
+    tips: {
+      good: ["Charms", "Troop speed up", "Gather rss"],
+      ok: ["Forgehammer", "Widgets", "Mithril"],
+      skip: ["Truegold", "Construction speed up", "Research speed up", "Intel missions", "Roulette", "Shards", "Level up pets", "Refinement pets", "Gov. gear", "Master skills", "Master emblem", "Manuscript"]
     }
   }
+};
 
-  if($("lockedProfileBtn"))$("lockedProfileBtn").textContent=t("complete_profile");
-  setText("#selectionPanel strong",t("choose_times"));
-  setText("#selectionPanel p",t("choose_help"));
-  if($("submitBtn"))$("submitBtn").textContent=t("submit");
-  setText(".my-requests .schedule-header strong",t("my_requests"));
-  setText(".my-requests .schedule-header small",t("my_requests_help"));
-  if($("crossoverNote"))$("crossoverNote").textContent="🔁 "+t("crossover");
+const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
-  document.querySelectorAll(".day-tab").forEach(b=>{
-    const d=b.dataset.day,sp=b.querySelector("span");
-    if(!sp)return;
-    const firstText=[...sp.childNodes].find(n=>n.nodeType===Node.TEXT_NODE);
-    if(firstText)firstText.textContent=titleText(d);
-    const small=sp.querySelector("small");
-    if(small)small.textContent=dayText(d);
+let currentDay = "monday";
+let selected = new Set();
+let user = null;
+let profile = null;
+let appointments = [];
+let myRequests = [];
+let publicActivity = [];
+
+const esc = value => String(value ?? "")
+  .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+
+function initTheme(){
+  const saved = localStorage.getItem("kvkTheme") || "pink";
+  document.documentElement.dataset.theme = saved;
+  const selector = $("themeSelect");
+  if(selector){
+    selector.value = saved;
+    selector.addEventListener("change", () => {
+      document.documentElement.dataset.theme = selector.value;
+      localStorage.setItem("kvkTheme", selector.value);
+    });
+  }
+}
+
+function initLanguage(){
+  const selector = $("languageSelect");
+  if(selector){
+    selector.value = I.current;
+    selector.addEventListener("change", () => I.set(selector.value));
+  }
+}
+
+function timePoint(startDay, startMinute, offsetMinutes){
+  let dayIndex = DAY_NAMES.indexOf(startDay);
+  let minute = startMinute + offsetMinutes;
+  while(minute >= 1440){ minute -= 1440; dayIndex = (dayIndex + 1) % 7; }
+  return {
+    day: DAY_NAMES[dayIndex],
+    time: `${String(Math.floor(minute/60)).padStart(2,"0")}:${String(minute%60).padStart(2,"0")}`
+  };
+}
+
+function getSlot(day, index){
+  const cfg = DAYS[day];
+  const start = timePoint(cfg.startDay, cfg.startMinute, index * 30);
+  const end = timePoint(cfg.startDay, cfg.startMinute, (index + 1) * 30);
+  let key = `${day}-${index}`;
+
+  // Monday 23:45→Tuesday 00:15 and Tuesday's first slot are the same minister appointment.
+  if((day === "monday" && index === 48) || (day === "tuesday" && index === 0)){
+    key = "chief-crossover";
+  }
+
+  return {
+    key,
+    display: `${start.time}–${end.time}`,
+    full: start.day === end.day ? `${start.day} ${start.time}–${end.time}` : `${start.day} ${start.time} → ${end.day} ${end.time}`,
+    cross: start.day !== end.day
+  };
+}
+
+function roleText(day=currentDay){ return t(DAYS[day].roleKey); }
+function titleText(day){ return t(`${day}_title`); }
+function dayText(day){ return t(day); }
+
+function setText(selector, value){
+  const el = document.querySelector(selector);
+  if(el) el.textContent = value;
+}
+
+function applyTranslations(){
+  document.title = t("planner");
+
+  const brand = document.querySelector(".brand-block h1");
+  if(brand) brand.innerHTML = `<span class="server-number">1423</span> ⚔️ ${t("planner")}`;
+
+  setText('a[href="admin.html"]', t("admin_login"));
+  if($("profileBtn")) $("profileBtn").textContent = t("my_profile");
+  if($("roleSmall")) $("roleSmall").textContent = roleText();
+  setText(".info-bar strong", t("select_slots"));
+  setText("#tipsToggle strong", t("points_tips"));
+  setText("#lockedPanel > span", "🔒 " + t("profile_gate"));
+  if($("lockedProfileBtn")) $("lockedProfileBtn").textContent = t("complete_profile");
+  setText("#selectionPanel strong", t("choose_times"));
+  setText("#selectionPanel p", t("choose_help"));
+  if($("submitBtn")) $("submitBtn").textContent = t("submit");
+  setText(".my-requests .schedule-header strong", t("my_requests"));
+  setText(".my-requests .schedule-header small", t("my_requests_help"));
+  if($("crossoverNote")) $("crossoverNote").textContent = "🔁 " + t("crossover");
+
+  document.querySelectorAll(".day-tab").forEach(btn => {
+    const day = btn.dataset.day;
+    const span = btn.querySelector("span");
+    if(!span) return;
+    const textNode = [...span.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
+    if(textNode) textNode.textContent = titleText(day);
+    const small = span.querySelector("small");
+    if(small) small.textContent = dayText(day);
   });
 
-  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
-  setText(".resource-box h3",t("resources"));
-  document.querySelectorAll('[data-close="profileDialog"]').forEach(b=>{if(b.textContent.trim()!=="×")b.textContent=t("cancel")});
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  setText(".resource-box h3", t("resources"));
+  document.querySelectorAll('[data-close="profileDialog"]').forEach(btn => {
+    if(btn.textContent.trim() !== "×") btn.textContent = t("cancel");
+  });
 }
-function banner(msg,kind=""){$("connectionBanner").textContent=msg;$("connectionBanner").className=`connection-banner ${kind}`}
-function renderTips(){const a=DAYS[currentDay].tips;$("tipsPanel").innerHTML=[["good","✅ "+t("great"),a.good],["ok","🟧 "+t("ok"),a.ok],["skip","⛔ "+t("skip"),a.skip]].map(([c,h,x])=>`<div class="tip ${c}"><h4>${h}</h4><div class="chips">${x.map(v=>`<span>${v}</span>`).join("")}</div></div>`).join("")}
-async function ensureAuth(){const {data:{session}}=await sb.auth.getSession();if(session){user=session.user;return}const {data,error}=await sb.auth.signInAnonymously();if(error)throw new Error("Anonymous sign-in is not enabled in Supabase.");user=data.user}
-async function loadProfile(){const {data,error}=await sb.from("player_profiles").select("*").eq("user_id",user.id).maybeSingle();if(error)throw error;profile=data}
-async function loadData(){
-  const [a,activity]=await Promise.all([
+
+function setBanner(message, kind=""){
+  const el = $("connectionBanner");
+  if(!el) return;
+  el.textContent = message;
+  el.className = `connection-banner ${kind}`.trim();
+}
+
+async function ensureAnonymousAuth(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session){ user = session.user; return; }
+
+  const { data, error } = await sb.auth.signInAnonymously();
+  if(error) throw new Error("Anonymous sign-in is not enabled in Supabase.");
+  user = data.user;
+}
+
+async function loadProfile(){
+  const { data, error } = await sb
+    .from("player_profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if(error) throw error;
+  profile = data;
+}
+
+async function loadSharedData(){
+  const [appointmentsResult, activityResult] = await Promise.all([
     sb.from("appointments").select("slot_key,event_day,minister_role,player_name,alliance"),
     sb.rpc("get_public_slot_activity")
   ]);
-  if(a.error)throw a.error;
-  if(activity.error)throw activity.error;
-  appointments=a.data||[];
-  publicActivity=activity.data||[];
+
+  if(appointmentsResult.error) throw appointmentsResult.error;
+  if(activityResult.error) throw activityResult.error;
+
+  appointments = appointmentsResult.data || [];
+  publicActivity = activityResult.data || [];
+
   if(profile){
-    const r=await sb.from("slot_requests").select("id,slot_key,event_day,minister_role,status").eq("profile_id",profile.id);
-    if(r.error)throw r.error;
-    myRequests=r.data||[];
-  }else myRequests=[];
-}
-function apFor(k){return appointments.find(a=>a.slot_key===k)||null}
-function mineFor(k){return myRequests.find(r=>r.slot_key===k&&["pending","confirmed"].includes(r.status))||null}
-function pendingFor(k){return publicActivity.filter(r=>r.slot_key===k&&r.status==="pending")}
-function visiblePendingNames(k){
-  const rows=pendingFor(k);
-  if(!rows.length)return "";
-  return rows.map(r=>`<span class="pending-player"><span class="alliance">${esc(r.alliance)}</span><strong>${esc(r.player_name)}</strong></span>`).join("");
+    const { data, error } = await sb
+      .from("slot_requests")
+      .select("id,slot_key,event_day,minister_role,status")
+      .eq("profile_id", profile.id);
+
+    if(error) throw error;
+    myRequests = data || [];
+  }else{
+    myRequests = [];
+  }
 }
 
-function render(){
-  applyStatic();renderTips();
-  $("roleTitle").textContent=`${DAYS[currentDay].icon} ${roleText()}`;
-  $("crossoverNote").hidden=currentDay!=="tuesday";
-  const list=$("slotList");list.innerHTML="";let confirmed=0;
-  for(let i=0;i<DAYS[currentDay].slotCount;i++){
-    const s=slot(currentDay,i),ap=apFor(s.key),mine=mineFor(s.key);if(ap)confirmed++;
-    const row=document.createElement("div");row.className="slot"+(s.cross?" cross":"")+(ap?" confirmed":mine?" pending":"")+(selected.has(s.key)?" selected":"");
-    const cb=document.createElement("input");cb.type="checkbox";cb.checked=selected.has(s.key);cb.disabled=!profile||!!ap;cb.onclick=e=>{e.stopPropagation();toggle(s.key)};
-    const tm=document.createElement("div");tm.className="slot-time";tm.textContent=s.display;
-    const pendingRows=pendingFor(s.key);
-    const main=document.createElement("div");main.className="slot-main";
-    if(ap){
-      main.innerHTML=`<span class="alliance">${esc(ap.alliance)}</span><strong>${esc(ap.player_name)}</strong>`;
-    }else if(pendingRows.length){
-      main.innerHTML=`<div class="pending-stack">${visiblePendingNames(s.key)}</div>`;
-    }else{
-      main.innerHTML=`<span class="muted">${t("available")}</span>`;
-    }
-    const st=document.createElement("div");st.className="slot-status";
-    st.textContent=ap?`✓ ${t("confirmed")}`:pendingRows.length?`${pendingRows.length} ${t("pending")}`:"";
-    row.append(cb,tm,main,st);row.onclick=()=>{if(profile&&!ap)toggle(s.key)};list.appendChild(row);
+function appointmentFor(slotKey){
+  return appointments.find(a => a.slot_key === slotKey) || null;
+}
+
+function ownRequestFor(slotKey){
+  return myRequests.find(r => r.slot_key === slotKey && ["pending","confirmed"].includes(r.status)) || null;
+}
+
+function pendingFor(slotKey){
+  return publicActivity.filter(r => r.slot_key === slotKey && r.status === "pending");
+}
+
+function pendingPlayersHtml(slotKey){
+  return pendingFor(slotKey)
+    .map(r => `<span class="pending-player"><span class="alliance">${esc(r.alliance)}</span><strong>${esc(r.player_name)}</strong></span>`)
+    .join("");
+}
+
+function renderTips(){
+  const tips = DAYS[currentDay].tips;
+  const groups = [
+    ["good", "✅ " + t("great"), tips.good],
+    ["ok", "🟧 " + t("ok"), tips.ok],
+    ["skip", "⛔ " + t("skip"), tips.skip]
+  ];
+
+  $("tipsPanel").innerHTML = groups.map(([cls, heading, items]) =>
+    `<div class="tip ${cls}"><h4>${heading}</h4><div class="chips">${items.map(i => `<span>${i}</span>`).join("")}</div></div>`
+  ).join("");
+}
+
+function updateProfileGate(){
+  const loggedIn = !!profile;
+  const status = $("profileStatus");
+
+  if(status){
+    status.textContent = loggedIn
+      ? `✓ ${profile.alliance} · ${profile.player_name} · ID ${profile.player_id}`
+      : t("profile_required");
+    status.className = `profile-status ${loggedIn ? "complete" : "incomplete"}`;
   }
-  $("scheduleSummary").textContent=t("confirmed_count",{n:confirmed});
-  $("confirmedBadge").textContent=t("confirmed_count",{n:confirmed});
-  $("selectionCount").textContent=t("selected",{n:selected.size});
-  $("selectionCount").classList.toggle("valid",selected.size>=3&&selected.size<=5);
-  $("submitBtn").disabled=!profile||selected.size<3||selected.size>5;
-  renderMine();profileUI();
+
+  if($("lockedPanel")) $("lockedPanel").hidden = loggedIn;
+  if($("selectionPanel")) $("selectionPanel").hidden = !loggedIn;
+
+  if(!loggedIn){
+    const dialog = $("profileDialog");
+    if(dialog && !dialog.open) openProfile(false);
+  }
 }
-function toggle(k){if(selected.has(k))selected.delete(k);else{if(selected.size>=5){alert(t("max_five"));return}selected.add(k)}render()}
-function renderMine(){
-  const box=$("myRequests");
-  if(!profile){box.innerHTML=`<p class="muted" style="padding:10px 14px">${t("complete_first")}</p>`;return}
-  const rows=myRequests.filter(r=>["pending","confirmed"].includes(r.status));
-  if(!rows.length){box.innerHTML=`<p class="muted" style="padding:10px 14px">${t("no_active")}</p>`;return}
-  box.innerHTML=rows.map(r=>{let d=r.slot_key;for(let i=0;i<DAYS[r.event_day].slotCount;i++){const s=slot(r.event_day,i);if(s.key===r.slot_key){d=s.full;break}}return`<div class="request-row"><span class="alliance">${profile.alliance}</span><div><strong>${titleText(r.event_day)}</strong><div class="muted">${d} · ${roleText(r.event_day)}</div></div><span class="${r.status==="confirmed"?"status-confirmed":"status-pending"}">${r.status==="confirmed"?`✓ ${t("confirmed")}`:t("pending")}</span></div>`}).join("");
+
+function renderSchedule(){
+  applyTranslations();
+  renderTips();
+
+  $("roleTitle").textContent = `${DAYS[currentDay].icon} ${roleText()}`;
+  $("crossoverNote").hidden = currentDay !== "tuesday";
+
+  const list = $("slotList");
+  list.innerHTML = "";
+
+  let confirmedCount = 0;
+
+  for(let i=0; i<DAYS[currentDay].slotCount; i++){
+    const slot = getSlot(currentDay, i);
+    const appointment = appointmentFor(slot.key);
+    const own = ownRequestFor(slot.key);
+    const pending = pendingFor(slot.key);
+
+    if(appointment) confirmedCount++;
+
+    const row = document.createElement("div");
+    row.className = [
+      "slot",
+      slot.cross ? "cross" : "",
+      appointment ? "confirmed" : (pending.length ? "pending" : ""),
+      selected.has(slot.key) ? "selected" : ""
+    ].filter(Boolean).join(" ");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selected.has(slot.key);
+    checkbox.disabled = !profile || !!appointment;
+    checkbox.addEventListener("click", e => {
+      e.stopPropagation();
+      toggleSlot(slot.key);
+    });
+
+    const time = document.createElement("div");
+    time.className = "slot-time";
+    time.textContent = slot.display;
+
+    const main = document.createElement("div");
+    main.className = "slot-main";
+
+    if(appointment){
+      main.innerHTML = `<span class="alliance">${esc(appointment.alliance)}</span><strong>${esc(appointment.player_name)}</strong>`;
+    }else if(pending.length){
+      main.innerHTML = `<div class="pending-stack">${pendingPlayersHtml(slot.key)}</div>`;
+    }else{
+      main.innerHTML = `<span class="muted">${t("available")}</span>`;
+    }
+
+    const status = document.createElement("div");
+    status.className = "slot-status";
+    status.textContent = appointment
+      ? `✓ ${t("confirmed")}`
+      : (pending.length ? t("pending_count", {n: pending.length}) : "");
+
+    row.append(checkbox, time, main, status);
+    row.addEventListener("click", () => {
+      if(profile && !appointment) toggleSlot(slot.key);
+    });
+
+    list.appendChild(row);
+  }
+
+  $("scheduleSummary").textContent = t("confirmed_count", {n: confirmedCount});
+  $("confirmedBadge").textContent = t("confirmed_count", {n: confirmedCount});
+
+  $("selectionCount").textContent = t("selected", {n: selected.size});
+  $("selectionCount").classList.toggle("valid", selected.size >= 3 && selected.size <= 5);
+  $("submitBtn").disabled = !profile || selected.size < 3 || selected.size > 5;
+
+  renderMyRequests();
+  updateProfileGate();
 }
-function resetDialog(){
-  $("profileError").hidden=true;$("profileLookupStatus").hidden=true;$("profileDetails").hidden=true;$("saveProfileBtn").hidden=true;$("findProfileBtn").hidden=false;$("playerId").disabled=false;
-  $("profileDialogTitle").textContent=t("find_profile");$("profileIntro").textContent=t("find_intro");$("findProfileBtn").textContent=t("continue");$("saveProfileBtn").textContent=t("save");
+
+function toggleSlot(slotKey){
+  if(selected.has(slotKey)){
+    selected.delete(slotKey);
+  }else{
+    if(selected.size >= 5){
+      alert(t("max_five"));
+      return;
+    }
+    selected.add(slotKey);
+  }
+  renderSchedule();
 }
-function fillFields(p){$("playerName").value=p?.player_name||"";$("alliance").value=p?.alliance||"KCB";$("truegold").value=p?.truegold??0;$("general").value=p?.general_speedups??0;$("research").value=p?.research_speedups??0;$("training").value=p?.training_speedups??0;$("construction").value=p?.construction_speedups??0}
-function openProfile(edit=true){
-  resetDialog();
-  if(profile&&edit){
-    $("profileDialogTitle").textContent=t("my_profile");$("profileIntro").textContent=t("edit_intro");$("playerId").value=profile.player_id;$("playerId").disabled=true;$("findProfileBtn").hidden=true;$("profileDetails").hidden=false;$("saveProfileBtn").hidden=false;fillFields(profile);
-  }else{$("playerId").value="";fillFields(null)}
+
+function renderMyRequests(){
+  const box = $("myRequests");
+
+  if(!profile){
+    box.innerHTML = `<p class="muted" style="padding:10px 14px">${t("complete_first")}</p>`;
+    return;
+  }
+
+  const active = myRequests.filter(r => ["pending","confirmed"].includes(r.status));
+  if(!active.length){
+    box.innerHTML = `<p class="muted" style="padding:10px 14px">${t("no_active")}</p>`;
+    return;
+  }
+
+  box.innerHTML = active.map(r => {
+    let display = r.slot_key;
+    for(let i=0; i<DAYS[r.event_day].slotCount; i++){
+      const s = getSlot(r.event_day, i);
+      if(s.key === r.slot_key){ display = s.full; break; }
+    }
+
+    return `<div class="request-row">
+      <span class="alliance">${esc(profile.alliance)}</span>
+      <div><strong>${titleText(r.event_day)}</strong><div class="muted">${display} · ${roleText(r.event_day)}</div></div>
+      <span class="${r.status === "confirmed" ? "status-confirmed" : "status-pending"}">${r.status === "confirmed" ? `✓ ${t("confirmed")}` : t("pending")}</span>
+    </div>`;
+  }).join("");
+}
+
+function resetProfileDialog(){
+  $("profileError").hidden = true;
+  $("profileLookupStatus").hidden = true;
+  $("profileDetails").hidden = true;
+  $("saveProfileBtn").hidden = true;
+  $("findProfileBtn").hidden = false;
+  $("playerId").disabled = false;
+  $("profileDialogTitle").textContent = t("find_profile");
+  $("profileIntro").textContent = t("find_intro");
+  $("findProfileBtn").textContent = t("continue");
+  $("saveProfileBtn").textContent = t("save");
+}
+
+function fillProfileFields(data){
+  $("playerName").value = data?.player_name || "";
+  $("alliance").value = data?.alliance || "KCB";
+  $("truegold").value = data?.truegold ?? 0;
+  $("general").value = data?.general_speedups ?? 0;
+  $("research").value = data?.research_speedups ?? 0;
+  $("training").value = data?.training_speedups ?? 0;
+  $("construction").value = data?.construction_speedups ?? 0;
+}
+
+function openProfile(editExisting=true){
+  resetProfileDialog();
+
+  if(profile && editExisting){
+    $("profileDialogTitle").textContent = t("my_profile");
+    $("profileIntro").textContent = t("edit_intro");
+    $("playerId").value = profile.player_id;
+    $("playerId").disabled = true;
+    $("findProfileBtn").hidden = true;
+    $("profileDetails").hidden = false;
+    $("saveProfileBtn").hidden = false;
+    fillProfileFields(profile);
+  }else{
+    $("playerId").value = "";
+    fillProfileFields(null);
+  }
+
   $("profileDialog").showModal();
 }
-async function findProfile(){
-  const id=$("playerId").value.trim(),err=$("profileError"),status=$("profileLookupStatus");
-  err.hidden=true;status.hidden=true;
-  if(!id){err.textContent=t("enter_id");err.hidden=false;return}
-  $("findProfileBtn").disabled=true;$("findProfileBtn").textContent=t("checking");
+
+async function findOrClaimProfile(){
+  const playerId = $("playerId").value.trim();
+  const errorBox = $("profileError");
+  const statusBox = $("profileLookupStatus");
+
+  errorBox.hidden = true;
+  statusBox.hidden = true;
+
+  if(!playerId){
+    errorBox.textContent = t("enter_id");
+    errorBox.hidden = false;
+    return;
+  }
+
+  $("findProfileBtn").disabled = true;
+  $("findProfileBtn").textContent = t("checking");
+
   try{
-    const {data,error}=await sb.rpc("claim_player_profile",{p_player_id:id});if(error)throw error;
-    if(data){
+    const { data: profileId, error } = await sb.rpc("claim_player_profile", { p_player_id: playerId });
+    if(error) throw error;
+
+    if(profileId){
       await loadProfile();
+
+      // Fallback if PostgREST/session state is one tick behind.
       if(!profile){
-        const direct=await sb.from("player_profiles").select("*").eq("id",data).maybeSingle();
-        if(direct.error)throw direct.error;
-        profile=direct.data;
+        const direct = await sb.from("player_profiles").select("*").eq("id", profileId).maybeSingle();
+        if(direct.error) throw direct.error;
+        profile = direct.data;
       }
-      await loadData();
-      if($("profileDialog").open)$("profileDialog").close();
-      render();
-      banner(`✓ ${t("welcome",{name:profile.player_name})}`,"ok");
-      return
+
+      await loadSharedData();
+      $("profileDialog").close();
+      renderSchedule();
+      setBanner(`✓ ${t("welcome",{name:profile.player_name})}`, "ok");
+      return;
     }
-    $("profileDialogTitle").textContent=t("create_profile");$("profileIntro").textContent=t("create_intro");$("profileDetails").hidden=false;$("saveProfileBtn").hidden=false;$("findProfileBtn").hidden=true;$("playerId").disabled=true;status.textContent=t("new_id");status.className="lookup-status new";status.hidden=false;
-  }catch(e){err.textContent=e.message;err.hidden=false}
-  finally{$("findProfileBtn").disabled=false;$("findProfileBtn").textContent=t("continue")}
+
+    $("profileDialogTitle").textContent = t("create_profile");
+    $("profileIntro").textContent = t("create_intro");
+    $("profileDetails").hidden = false;
+    $("saveProfileBtn").hidden = false;
+    $("findProfileBtn").hidden = true;
+    $("playerId").disabled = true;
+    statusBox.textContent = t("new_id");
+    statusBox.className = "lookup-status new";
+    statusBox.hidden = false;
+
+  }catch(error){
+    errorBox.textContent = error.message;
+    errorBox.hidden = false;
+  }finally{
+    $("findProfileBtn").disabled = false;
+    $("findProfileBtn").textContent = t("continue");
+  }
 }
-async function saveProfile(e){
-  e.preventDefault();const err=$("profileError");err.hidden=true;if($("profileDetails").hidden)return;
-  const p={user_id:user.id,player_id:profile?.player_id||$("playerId").value.trim(),player_name:$("playerName").value.trim(),alliance:$("alliance").value,truegold:+$("truegold").value||0,general_speedups:+$("general").value||0,research_speedups:+$("research").value||0,training_speedups:+$("training").value||0,construction_speedups:+$("construction").value||0};
-  if(!p.player_name){err.textContent=t("enter_name");err.hidden=false;return}
-  const q=profile?sb.from("player_profiles").update(p).eq("id",profile.id).select().single():sb.from("player_profiles").insert(p).select().single();
-  const {data,error}=await q;if(error){err.textContent=error.message;err.hidden=false;return}
-  profile=data;$("profileDialog").close();await refresh();
+
+async function saveProfile(event){
+  event.preventDefault();
+  const errorBox = $("profileError");
+  errorBox.hidden = true;
+
+  if($("profileDetails").hidden) return;
+
+  const payload = {
+    user_id: user.id,
+    player_id: profile?.player_id || $("playerId").value.trim(),
+    player_name: $("playerName").value.trim(),
+    alliance: $("alliance").value,
+    truegold: Number($("truegold").value) || 0,
+    general_speedups: Number($("general").value) || 0,
+    research_speedups: Number($("research").value) || 0,
+    training_speedups: Number($("training").value) || 0,
+    construction_speedups: Number($("construction").value) || 0
+  };
+
+  if(!payload.player_name){
+    errorBox.textContent = t("enter_name");
+    errorBox.hidden = false;
+    return;
+  }
+
+  const query = profile
+    ? sb.from("player_profiles").update(payload).eq("id", profile.id).select().single()
+    : sb.from("player_profiles").insert(payload).select().single();
+
+  const { data, error } = await query;
+
+  if(error){
+    errorBox.textContent = error.message;
+    errorBox.hidden = false;
+    return;
+  }
+
+  profile = data;
+  $("profileDialog").close();
+  await refresh();
 }
-async function submit(){
-  const {error}=await sb.rpc("submit_slot_requests",{p_event_day:currentDay,p_slot_keys:[...selected]});
-  if(error){alert(error.message);return}
-  selected.clear();await refresh();alert(t("requests_saved"));
+
+async function submitRequests(){
+  const { error } = await sb.rpc("submit_slot_requests", {
+    p_event_day: currentDay,
+    p_slot_keys: [...selected]
+  });
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  selected.clear();
+  await refresh();
+  alert(t("requests_saved"));
 }
-async function refresh(){await loadProfile();await loadData();render()}
-initTheme();fillLanguageSelect();window.addEventListener("kvk-language-changed",render);
-document.querySelectorAll(".day-tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".day-tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");currentDay=b.dataset.day;selected.clear();render()});
-document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>$(b.dataset.close).close());
-$("profileBtn").onclick=()=>openProfile(true);$("lockedProfileBtn").onclick=()=>openProfile(false);$("findProfileBtn").onclick=findProfile;$("profileForm").onsubmit=saveProfile;$("submitBtn").onclick=submit;
-$("tipsToggle").onclick=()=>{$("tipsPanel").hidden=!$("tipsPanel").hidden;$("tipsArrow").textContent=$("tipsPanel").hidden?"›":"⌄"};
-(async()=>{try{banner(t("connecting"));await ensureAuth();await refresh();banner(`✓ ${t("connected")}`,"ok")}catch(e){console.error(e);banner(e.message,"error")}})();
+
+async function refresh(){
+  await loadProfile();
+  await loadSharedData();
+  renderSchedule();
+}
+
+function bindEvents(){
+  document.querySelectorAll(".day-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".day-tab").forEach(x => x.classList.remove("active"));
+      btn.classList.add("active");
+      currentDay = btn.dataset.day;
+      selected.clear();
+      renderSchedule();
+    });
+  });
+
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => $(btn.dataset.close).close());
+  });
+
+  $("profileBtn").addEventListener("click", () => openProfile(true));
+  $("lockedProfileBtn").addEventListener("click", () => openProfile(false));
+  $("findProfileBtn").addEventListener("click", findOrClaimProfile);
+  $("profileForm").addEventListener("submit", saveProfile);
+  $("submitBtn").addEventListener("click", submitRequests);
+  $("tipsToggle").addEventListener("click", () => {
+    $("tipsPanel").hidden = !$("tipsPanel").hidden;
+    $("tipsArrow").textContent = $("tipsPanel").hidden ? "›" : "⌄";
+  });
+
+  window.addEventListener("kvk-language-changed", renderSchedule);
+}
+
+async function start(){
+  initTheme();
+  initLanguage();
+  bindEvents();
+
+  try{
+    setBanner(t("connecting"));
+    await ensureAnonymousAuth();
+    await refresh();
+    setBanner(`✓ ${t("connected")}`, "ok");
+  }catch(error){
+    console.error(error);
+    setBanner(error.message, "error");
+  }
+}
+
+start();
 })();

@@ -1,20 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="pink">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css?v=20260810-1258-publicpending">
+  <link rel="stylesheet" href="style.css?v=20260810-1344-clean">
 </head>
 <body>
-<header class="topbar">
-  <div class="brand-block"><h1>⚔️ Kingshot KvK Planner</h1><p>PAR · VIK · KCB · FOR</p></div>
-  <div class="top-actions">
-    <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option></select><select id="themeSelect" class="theme-select" aria-label="Theme"><option value="pink">Pink</option>
-<option value="purple">Purple</option>
-<option value="teal">Teal</option>
-<option value="green">Green</option></select>
+<header class="topbar player-topbar">
+  <div class="brand-block">
+    <h1><span class="server-number">1423</span> ⚔️ Kingshot KvK Planner</h1>
+    <p>PAR · VIK · KCB · FOR</p>
+  </div>
+
+  <div class="profile-centre">
     <span id="profileStatus" class="profile-status incomplete">Profile required</span>
+  </div>
+
+  <div class="top-actions compact-actions">
+    <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option></select>
+    <select id="themeSelect" class="theme-select" aria-label="Theme"><option value="pink">Pink</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="green">Green</option></select>
     <button id="profileBtn" class="secondary">My KvK Profile</button>
     <a class="secondary button-link" href="admin.html">Admin Login</a>
   </div>
@@ -35,18 +40,23 @@
   </section>
 
   <section class="card">
-    <button id="tipsToggle" class="card-toggle"><span>💡 <strong>Points Tips</strong></span><span id="tipsArrow">⌄</span></button>
+    <button id="tipsToggle" class="card-toggle" type="button">
+      <span>💡 <strong>Points Tips</strong></span><span id="tipsArrow">⌄</span>
+    </button>
     <div id="tipsPanel" class="tips-panel"></div>
   </section>
 
   <section id="lockedPanel" class="locked-panel">
     <span>🔒 Complete your KvK Profile before requesting minister slots.</span>
-    <button id="lockedProfileBtn" class="primary">Complete Profile</button>
+    <button id="lockedProfileBtn" class="primary" type="button">Complete Profile</button>
   </section>
 
   <section id="selectionPanel" class="selection-panel" hidden>
     <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p></div>
-    <div class="selection-controls"><span id="selectionCount">0 of 5 selected</span><button id="submitBtn" class="primary" disabled>Submit Requests</button></div>
+    <div class="selection-controls">
+      <span id="selectionCount">0 of 5 selected</span>
+      <button id="submitBtn" class="primary" type="button" disabled>Submit Requests</button>
+    </div>
   </section>
 
   <section class="card">
@@ -59,7 +69,9 @@
   </section>
 
   <section class="card my-requests">
-    <div class="schedule-header"><div><strong>My Requests</strong><small>You can replace your choices for a day by selecting a new set of 3–5 times and submitting again.</small></div></div>
+    <div class="schedule-header">
+      <div><strong>My Requests</strong><small>You can replace your choices for a day by selecting a new set of 3–5 times and submitting again.</small></div>
+    </div>
     <div id="myRequests"></div>
   </section>
 </main>
@@ -70,7 +82,8 @@
     <h2 id="profileDialogTitle">Find your KvK Profile</h2>
     <p id="profileIntro" class="muted">Enter your Kingshot Player ID. If you have used the planner before, your existing profile will load automatically.</p>
 
-    <label class="field-label"><span data-i18n="player_id">Player ID</span>
+    <label class="field-label">
+      <span data-i18n="player_id">Player ID</span>
       <div class="player-id-row">
         <input id="playerId" required inputmode="numeric" placeholder="Player ID">
         <button id="findProfileBtn" type="button" class="primary">Continue</button>
@@ -97,6 +110,7 @@
 
     <div id="profileLookupStatus" class="lookup-status" hidden></div>
     <div id="profileError" class="form-error" hidden></div>
+
     <div class="dialog-actions">
       <button type="button" class="secondary" data-close="profileDialog">Cancel</button>
       <button id="saveProfileBtn" type="submit" class="primary" hidden>Save Profile</button>
@@ -105,8 +119,8 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-1258-publicpending"></script>
-<script src="translations.js?v=20260810-1258-publicpending"></script>
-<script src="app.js?v=20260810-1332-apfor"></script>
+<script src="config.js?v=20260810-1344-clean"></script>
+<script src="translations.js?v=20260810-1344-clean"></script>
+<script src="app.js?v=20260810-1344-clean"></script>
 </body>
 </html>

@@ -1,21 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="pink">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>KvK Planner Admin</title>
-  <link rel="stylesheet" href="style.css?v=20260810-1258-publicpending">
+  <link rel="stylesheet" href="style.css?v=20260810-1344-clean">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand-block"><h1>👑 KvK Planner Admin</h1><p>Private allocation dashboard</p></div>
-  <div class="top-actions">
-    <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option></select><select id="themeSelect" class="theme-select" aria-label="Theme"><option value="pink">Pink</option>
-<option value="purple">Purple</option>
-<option value="teal">Teal</option>
-<option value="green">Green</option></select>
+  <div class="brand-block">
+    <h1><span class="server-number">1423</span> 👑 KvK Planner Admin</h1>
+    <p>Private allocation dashboard</p>
+  </div>
+  <div class="top-actions compact-actions">
+    <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option></select>
+    <select id="themeSelect" class="theme-select" aria-label="Theme"><option value="pink">Pink</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="green">Green</option></select>
     <a class="secondary button-link" href="index.html">← Player Planner</a>
-    <button id="logoutBtn" class="secondary" hidden>Log out</button>
+    <button id="logoutBtn" class="secondary" type="button" hidden>Log out</button>
   </div>
 </header>
 
@@ -62,8 +63,8 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-1258-publicpending"></script>
-<script src="translations.js?v=20260810-1258-publicpending"></script>
-<script src="admin.js?v=20260810-1258-publicpending"></script>
+<script src="config.js?v=20260810-1344-clean"></script>
+<script src="translations.js?v=20260810-1344-clean"></script>
+<script src="admin.js?v=20260810-1344-clean"></script>
 </body>
 </html>
