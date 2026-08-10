@@ -160,3 +160,30 @@ Because the resource-save issue is database-facing as well as UI-facing, run thi
 Do not rerun the full master SQL on your existing database. The master SQL included here has also been updated so it remains the canonical reference for future setups.
 
 Cache version: `20260810-complete-v4`
+
+
+## v5 Player ID/session fix
+
+This version fixes the red error:
+
+`JSON object requested, multiple (or no) rows returned`
+
+The cause was older Player IDs being left linked to the same anonymous browser session after testing/claiming another Player ID.
+
+### IMPORTANT
+
+After uploading the GitHub files, run this file **once** in Supabase SQL Editor:
+
+`RUN-ONCE-player-session-fix.sql`
+
+It will:
+- clean up existing duplicate browser-to-profile links,
+- keep the most recently used profile linked,
+- update Player ID claiming so changing/recovering a Player ID releases the old session link first,
+- prevent the same browser session being attached to multiple profiles in future.
+
+The website itself is also now tolerant of legacy duplicate rows, so it won't crash on startup while loading a profile.
+
+Do not rerun the full master SQL on your existing database.
+
+Cache version: `20260810-complete-v5`

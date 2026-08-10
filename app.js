@@ -304,10 +304,11 @@ async function loadProfile(){
     .from("player_profiles")
     .select("*")
     .eq("user_id", user.id)
-    .maybeSingle();
+    .order("updated_at", { ascending:false })
+    .limit(1);
 
   if(error) throw error;
-  profile = data;
+  profile = data?.[0] || null;
 }
 
 async function loadSharedData(){
