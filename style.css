@@ -22,6 +22,12 @@ html[data-theme="green"]{
   --accent:#69d5ae;--accent-dark:#438f75;--accent-soft:#ade8d2;--accent-rgb:105,213,174;
   --accent-border:#4da282;--accent-deep:#37694d;--accent-side:#4f9d80;
 }
+html[data-theme="blue"]{
+  --bg:#05080c;--panel:#0b1118;--panel2:#101822;--border:#2e4f74;--text:#edf6ff;--muted:#90a4bb;
+  --accent:#57a8f2;--accent-dark:#3c76aa;--accent-soft:#a8d3ff;--accent-rgb:87,168,242;
+  --accent-border:#5e96cd;--accent-deep:#33597a;--accent-side:#487cb1;
+  --good:#7ad9b8;--amber:#e3bd73;--danger:#e190a2;
+}
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{
@@ -359,45 +365,67 @@ input,select,textarea,dialog,.card,
 }
 
 
-/* =========================================================
-   BLUE THEME
-   ========================================================= */
-html[data-theme="blue"]{
-  --bg:#05080c;
-  --panel:#071019;
-  --panel2:#0a1420;
-  --border:#18344d;
-  --text:#edf7ff;
-  --muted:#8da7bc;
+/* PWA install + splash */
+.install-btn[hidden]{display:none!important}
+.install-btn.show{display:inline-flex!important;align-items:center;justify-content:center}
+.install-btn::before{content:"⬇";font-size:.95em;line-height:1;margin-right:6px;opacity:.9}
 
-  --accent:#419ee8;
-  --accent-dark:#255b8b;
-  --accent-soft:#c2e8ff;
-  --accent-rgb:65,158,232;
-
-  --accent-border:#337eb9;
-  --accent-deep:#244f74;
-  --accent-side:#3277ad;
-
-  --good:#68d0a2;
-  --amber:#e0b655;
-  --danger:#da748b;
-}
-
-html[data-theme="blue"] body{
+.pwa-splash{
+  position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;
   background:
-    radial-gradient(circle at 18% -8%,rgba(65,158,232,.16),transparent 31%),
-    linear-gradient(rgba(65,158,232,.018) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(65,158,232,.014) 1px,transparent 1px),
-    #05080c;
-  background-size:auto,32px 32px,32px 32px,auto;
+    radial-gradient(circle at 50% 28%, rgba(var(--accent-rgb),.22), transparent 36%),
+    linear-gradient(rgba(var(--accent-rgb),.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(var(--accent-rgb),.018) 1px,transparent 1px),
+    var(--bg);
+  background-size:auto,26px 26px,26px 26px,auto;
+  transition:opacity .45s ease, visibility .45s ease;
 }
-
-html[data-theme="blue"] .topbar{
-  background:
-    linear-gradient(180deg,rgba(65,158,232,.13),rgba(5,8,12,.96));
+.pwa-splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.pwa-splash-card{
+  width:min(92vw, 420px);
+  padding:28px 24px;
+  border-radius:20px;
+  border:1px solid var(--accent-border);
+  background:linear-gradient(180deg, rgba(var(--accent-rgb),.14), rgba(10,10,16,.94));
+  box-shadow:0 24px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(var(--accent-rgb),.12), 0 0 28px rgba(var(--accent-rgb),.2);
+  text-align:center;
+  position:relative;
+  overflow:hidden;
 }
+.pwa-splash-card::before,.pwa-splash-card::after{
+  content:"";position:absolute;width:28px;height:18px;top:0;border-top:3px solid var(--accent);opacity:.95
+}
+.pwa-splash-card::before{left:0;border-left:3px solid var(--accent)}
+.pwa-splash-card::after{right:0;border-right:3px solid var(--accent)}
+.pwa-splash-icon{
+  width:92px;height:92px;border-radius:22px;margin:0 auto 16px;display:block;
+  box-shadow:0 0 28px rgba(var(--accent-rgb),.28), inset 0 0 0 1px rgba(255,255,255,.08);
+  background:#0b0d13;padding:10px;object-fit:contain;
+}
+.pwa-splash-title{
+  margin:0;font-family:"Courier New",ui-monospace,monospace;font-size:26px;font-weight:800;letter-spacing:.08em;
+  color:var(--accent-soft);text-transform:uppercase;
+}
+.pwa-splash-subtitle{margin:8px 0 0;color:var(--muted);font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+.pwa-splash-loader{
+  width:150px;height:4px;margin:18px auto 0;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden
+}
+.pwa-splash-loader span{display:block;width:45%;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-soft));animation:pwaPulse 1s ease-in-out infinite}
+@keyframes pwaPulse{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
 
-html[data-theme="blue"] .theme-dot[data-theme-choice="blue"]{
-  background:#419ee8;
+.install-help{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:4200;
+  width:min(92vw, 440px);padding:14px 16px 14px 16px;border-radius:16px;
+  border:1px solid var(--accent-border);
+  background:linear-gradient(180deg, rgba(var(--accent-rgb),.12), rgba(10,10,16,.96));
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
+}
+.install-help h3{margin:0 0 6px;font-size:15px;color:var(--accent-soft)}
+.install-help p{margin:0;color:var(--text);font-size:13px;line-height:1.45}
+.install-help .close-install-help{
+  position:absolute;top:8px;right:10px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:20px;padding:0 4px
+}
+@media (max-width: 760px){
+  .pwa-splash-card{padding:24px 18px;border-radius:18px}
+  .pwa-splash-title{font-size:22px}
 }
