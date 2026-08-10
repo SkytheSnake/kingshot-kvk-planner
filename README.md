@@ -1,47 +1,23 @@
-# Kingshot KvK Planner — UX & Admin upgrade
+# Layout Refresh
 
-Adds the requested quality-of-life features, excluding:
-- CSV/export
-- copy-to-clipboard schedule
-- Discord/contact field
-- fairness indicator
+This version moves the player page closer to the approved design mockup.
 
-## Player additions
-- Prominent confirmed-appointment banner.
-- Live countdown to the application deadline.
-- Clear warning when resubmitting will replace current pending choices.
-- Resource freshness timestamp.
-- Finalised days become read-only.
-- Mobile sticky booking panel / larger submit target.
+## Changes
+- Buttons/cards are rounded again.
+- Player profile moved into a left-hand sidebar.
+- My Requests moved below the profile.
+- Theme picker moved to the bottom-left with coloured circular buttons.
+- Theme options: Pink, Purple, Teal, Green, Blue.
+- Day tabs now show both the weekday and actual KvK date.
+- Main schedule stays on the right.
+- Existing booking/profile/deadline/admin logic is preserved.
 
-## Admin additions
-- Search by player name or Player ID.
-- Alliance filter.
-- Applicant sorting by best fit, name, alliance or individual resource type.
-- Admin note on each player.
-- Resource freshness shown beside applicant resources.
-- Conflict protection for duplicate confirmed appointments.
-- Admin activity log.
-- Undo last reversible admin action.
-- Needs Attention section for rejected applicants not yet contacted.
-- Finalise day button.
-- Owner-only Reopen day button.
-- Owner-only KvK archive/history.
-- Owner-only reset still works and reopens all days for the next cycle.
-
-## Supabase
-Run `supabase_ux_admin_upgrade.sql` once.
-
-After it succeeds, replace your saved master query with the included updated
-`kingshot-kvk-planner-supabase-master.sql`.
-
-## GitHub
+## Upload to GitHub
 Replace:
 - index.html
-- admin.html
 - style.css
-- translations.js
 - app.js
-- admin.js
 
-Cache version: 20260810-1500-uxadmin
+No Supabase changes are required.
+
+Cache version: 20260810-1545-layout-refresh

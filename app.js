@@ -70,6 +70,24 @@ function dayFinalised(day=currentDay){
   return !!daySettings.find(x=>x.event_day===day)?.is_finalised;
 }
 
+function tabDateFor(day){
+  const offsets={monday:0,tuesday:1,thursday:3};
+  const d=new Date(plannerCycleStart()+offsets[day]*86400000);
+  return {
+    dow:new Intl.DateTimeFormat("en-GB",{weekday:"short",timeZone:"UTC"}).format(d).toUpperCase(),
+    date:new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"short",timeZone:"UTC"}).format(d).toUpperCase()
+  };
+}
+
+function renderDayDates(){
+  ["monday","tuesday","thursday"].forEach(day=>{
+    const el=$(`${day}Date`);
+    if(!el)return;
+    const x=tabDateFor(day);
+    el.innerHTML=`<strong>${x.dow}</strong>${x.date}`;
+  });
+}
+
 function currentConfirmedAppointment(){
   if(!profile) return null;
   const ownConfirmed=myRequests.find(r=>r.event_day===currentDay && r.status==="confirmed");
@@ -151,15 +169,31 @@ const esc = value => String(value ?? "")
 
 function initTheme(){
   const saved = localStorage.getItem("kvkTheme") || "pink";
-  document.documentElement.dataset.theme = saved;
+  applyTheme(saved);
+
   const selector = $("themeSelect");
   if(selector){
     selector.value = saved;
-    selector.addEventListener("change", () => {
-      document.documentElement.dataset.theme = selector.value;
-      localStorage.setItem("kvkTheme", selector.value);
-    });
+    selector.addEventListener("change", () => applyTheme(selector.value));
   }
+
+  document.querySelectorAll("[data-theme-choice]").forEach(btn=>{
+    btn.addEventListener("click",()=>applyTheme(btn.dataset.themeChoice));
+  });
+}
+
+function applyTheme(theme){
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("kvkTheme", theme);
+
+  const selector = $("themeSelect");
+  if(selector) selector.value = theme;
+
+  const names={pink:"Retro Pink",purple:"Electric Purple",teal:"Neon Teal",green:"Matrix Green",blue:"Electric Blue"};
+  document.querySelectorAll("[data-theme-choice]").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.themeChoice===theme);
+  });
+  if($("themeName")) $("themeName").textContent=names[theme]||theme;
 }
 
 function initLanguage(){
@@ -349,6 +383,11 @@ function updateProfileGate(){
     }
   }
 
+  if($("profilePlayerId")) $("profilePlayerId").textContent=loggedIn?profile.player_id:"—";
+  if($("profilePlayerName")) $("profilePlayerName").textContent=loggedIn?profile.player_name:"—";
+  if($("profileAlliance")) $("profileAlliance").textContent=loggedIn?profile.alliance:"—";
+  if($("profileRailStatus")) $("profileRailStatus").textContent=!loggedIn?t("profile_required"):(needsResources?"Update resources":"Active");
+
   if($("lockedPanel")) $("lockedPanel").hidden = loggedIn && !needsResources;
   if($("selectionPanel")) $("selectionPanel").hidden = !loggedIn || needsResources;
 
@@ -367,6 +406,7 @@ function updateProfileGate(){
 function renderSchedule(){
   applyTranslations();
   renderTips();
+  renderDayDates();
   renderDeadline();
   renderConfirmedBanner();
   renderReplaceWarning();

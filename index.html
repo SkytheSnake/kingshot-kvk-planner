@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css?v=20260810-1535-retro-neon">
+  <link rel="stylesheet" href="style.css?v=20260810-1545-layout-refresh">
 </head>
 <body>
 <header class="topbar player-topbar">
@@ -19,65 +19,102 @@
 
   <div class="top-actions compact-actions">
     <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option></select>
-    <select id="themeSelect" class="theme-select" aria-label="Theme"><option value="pink">Pink</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="green">Green</option><option value="blue">Blue</option></select>
-    <button id="profileBtn" class="secondary">My KvK Profile</button>
+    <select id="themeSelect" class="theme-select hidden-theme-select" aria-label="Theme"><option value="pink">Pink</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="green">Green</option><option value="blue">Blue</option></select>
+    
     <a class="secondary button-link" href="admin.html">Admin Login</a>
   </div>
 </header>
 
-<main>
-  <nav class="day-tabs">
-    <button class="day-tab active" data-day="monday">🏗️ <span>City Construction<small>Monday</small></span></button>
-    <button class="day-tab" data-day="tuesday">📚 <span>Basic Skills<small>Tuesday</small></span></button>
-    <button class="day-tab" data-day="thursday">🦸 <span>Hero Development<small>Thursday</small></span></button>
-  </nav>
+<main class="planner-shell">
+  <aside class="left-rail">
+    <section class="card profile-card">
+      <div class="section-kicker">✦ YOUR PROFILE ✦</div>
+      <div class="profile-summary">
+        <div><span>Player ID</span><strong id="profilePlayerId">—</strong></div>
+        <div><span>Player Name</span><strong id="profilePlayerName">—</strong></div>
+        <div><span>Alliance</span><strong id="profileAlliance">—</strong></div>
+        <div><span>Profile Status</span><strong id="profileRailStatus">Required</strong></div>
+      </div>
+      <button id="profileBtn" class="primary wide-btn" type="button">My KvK Profile</button>
+    </section>
 
-  <section id="connectionBanner" class="connection-banner">Connecting to shared planner…</section>
-  <section id="confirmedAppointmentBanner" class="confirmed-appointment-banner" hidden></section>
+    <section class="card my-requests left-my-requests">
+      <div class="schedule-header">
+        <div><strong>My Requests</strong><small>You can replace your choices for a day by selecting a new set of 3–5 times and submitting again.</small></div>
+      </div>
+      <div id="myRequests"></div>
+    </section>
 
-  <section class="info-bar">
-    <div>
-      <small id="roleSmall">Chief Minister</small>
-      <strong>Select 3–5 acceptable slots</strong>
-      <div id="deadlineText" class="deadline-text"></div><div id="deadlineCountdown" class="deadline-countdown"></div>
-    </div>
-    <span id="deadlineState">UTC</span>
-  </section>
+    <section class="card theme-card">
+      <div class="section-kicker">THEME</div>
+      <div class="theme-dots" id="themeDots">
+        <button class="theme-dot" data-theme-choice="pink" aria-label="Pink theme"></button>
+        <button class="theme-dot" data-theme-choice="purple" aria-label="Purple theme"></button>
+        <button class="theme-dot" data-theme-choice="teal" aria-label="Teal theme"></button>
+        <button class="theme-dot" data-theme-choice="green" aria-label="Green theme"></button>
+        <button class="theme-dot" data-theme-choice="blue" aria-label="Blue theme"></button>
+      </div>
+      <div id="themeName" class="theme-name">Retro Pink</div>
+    </section>
+  </aside>
 
-  <section class="card">
-    <button id="tipsToggle" class="card-toggle" type="button">
-      <span>💡 <strong>Points Tips</strong></span><span id="tipsArrow">⌄</span>
-    </button>
-    <div id="tipsPanel" class="tips-panel"></div>
-  </section>
+  <section class="main-column">
+    <nav class="day-tabs day-tabs-dated">
+      <button class="day-tab active" data-day="monday">
+        <span class="tab-date" id="mondayDate">MON</span>
+        <span>City Construction<small>Monday</small></span>
+      </button>
+      <button class="day-tab" data-day="tuesday">
+        <span class="tab-date" id="tuesdayDate">TUE</span>
+        <span>Basic Skills<small>Tuesday</small></span>
+      </button>
+      <button class="day-tab" data-day="thursday">
+        <span class="tab-date" id="thursdayDate">THU</span>
+        <span>Hero Development<small>Thursday</small></span>
+      </button>
+    </nav>
 
-  <section id="lockedPanel" class="locked-panel">
-    <span>🔒 Complete your KvK Profile before requesting minister slots.</span>
-    <button id="lockedProfileBtn" class="primary" type="button">Complete Profile</button>
-  </section>
+    <section id="connectionBanner" class="connection-banner">Connecting to shared planner…</section>
+    <section id="confirmedAppointmentBanner" class="confirmed-appointment-banner" hidden></section>
 
-  <section id="selectionPanel" class="selection-panel sticky-mobile-submit" hidden>
-    <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p><p id="replaceWarning" class="replace-warning" hidden></p></div>
-    <div class="selection-controls">
-      <span id="selectionCount">0 of 5 selected</span>
-      <button id="submitBtn" class="primary" type="button" disabled>Submit Requests</button>
-    </div>
-  </section>
+    <section class="info-bar">
+      <div>
+        <small id="roleSmall">Chief Minister</small>
+        <strong>Select 3–5 acceptable slots</strong>
+        <div id="deadlineText" class="deadline-text"></div>
+        <div id="deadlineCountdown" class="deadline-countdown"></div>
+      </div>
+      <span id="deadlineState">UTC</span>
+    </section>
 
-  <section class="card">
-    <div class="schedule-header">
-      <div><strong id="roleTitle">🏛️ Chief Minister</strong><small id="scheduleSummary"></small></div>
-      <div class="badges"><span id="confirmedBadge" class="badge green">0 confirmed</span></div>
-    </div>
-    <div id="crossoverNote" class="note" hidden>🔁 Tuesday's first slot is the same Chief Minister appointment as Monday 23:45 → Tuesday 00:15.</div>
-    <div id="slotList" class="slot-list"></div>
-  </section>
+    <section class="card">
+      <button id="tipsToggle" class="card-toggle" type="button">
+        <span>💡 <strong>Points Tips</strong></span><span id="tipsArrow">⌄</span>
+      </button>
+      <div id="tipsPanel" class="tips-panel"></div>
+    </section>
 
-  <section class="card my-requests">
-    <div class="schedule-header">
-      <div><strong>My Requests</strong><small>You can replace your choices for a day by selecting a new set of 3–5 times and submitting again.</small></div>
-    </div>
-    <div id="myRequests"></div>
+    <section id="lockedPanel" class="locked-panel">
+      <span>🔒 Complete your KvK Profile before requesting minister slots.</span>
+      <button id="lockedProfileBtn" class="primary" type="button">Complete Profile</button>
+    </section>
+
+    <section id="selectionPanel" class="selection-panel sticky-mobile-submit" hidden>
+      <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p><p id="replaceWarning" class="replace-warning" hidden></p></div>
+      <div class="selection-controls">
+        <span id="selectionCount">0 of 5 selected</span>
+        <button id="submitBtn" class="primary" type="button" disabled>Submit Requests</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="roleTitle">🏛️ Chief Minister</strong><small id="scheduleSummary"></small></div>
+        <div class="badges"><span id="confirmedBadge" class="badge green">0 confirmed</span></div>
+      </div>
+      <div id="crossoverNote" class="note" hidden>🔁 Tuesday's first slot is the same Chief Minister appointment as Monday 23:45 → Tuesday 00:15.</div>
+      <div id="slotList" class="slot-list"></div>
+    </section>
   </section>
 </main>
 
@@ -124,8 +161,8 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-1500-uxadmin"></script>
-<script src="translations.js?v=20260810-1500-uxadmin"></script>
-<script src="app.js?v=20260810-1500-uxadmin"></script>
+<script src="config.js?v=20260810-1545-layout-refresh"></script>
+<script src="translations.js?v=20260810-1545-layout-refresh"></script>
+<script src="app.js?v=20260810-1545-layout-refresh"></script>
 </body>
 </html>
