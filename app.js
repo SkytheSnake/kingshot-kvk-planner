@@ -21,7 +21,7 @@ const DAYS={
   thursday:{role:"noble",icon:"👑",startDay:"Wednesday",startMinute:1425,slotCount:49,tips:{good:["Charms","Troop speed up","Gather rss"],ok:["Forgehammer","Widgets","Mithril"],skip:["Truegold","Construction speed up","Research speed up","Intel missions","Roulette","Shards","Level up pets","Refinement pets","Gov. gear","Master skills","Master emblem","Manuscript"]}}
 };
 const names=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-let currentDay="monday",selected=new Set(),user=null,profile=null,appointments=[],myRequests=[];
+let currentDay="monday",selected=new Set(),user=null,profile=null,appointments=[],myRequests=[],publicActivity=[];
 const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
 function tp(sd,sm,o){let d=names.indexOf(sd),m=sm+o;while(m>=1440){m-=1440;d=(d+1)%7}return{day:names[d],time:`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}}
 function slot(day,i){const c=DAYS[day],s=tp(c.startDay,c.startMinute,i*30),e=tp(c.startDay,c.startMinute,(i+1)*30);let key=`${day}-${i}`;if((day==="monday"&&i===48)||(day==="tuesday"&&i===0))key="chief-crossover";return{key,display:`${s.time}–${e.time}`,full:s.day===e.day?`${s.day} ${s.time}–${e.time}`:`${s.day} ${s.time} → ${e.day} ${e.time}`,cross:s.day!==e.day}}
@@ -78,19 +78,20 @@ function banner(msg,kind=""){$("connectionBanner").textContent=msg;$("connection
 function renderTips(){const a=DAYS[currentDay].tips;$("tipsPanel").innerHTML=[["good","✅ "+t("great"),a.good],["ok","🟧 "+t("ok"),a.ok],["skip","⛔ "+t("skip"),a.skip]].map(([c,h,x])=>`<div class="tip ${c}"><h4>${h}</h4><div class="chips">${x.map(v=>`<span>${v}</span>`).join("")}</div></div>`).join("")}
 async function ensureAuth(){const {data:{session}}=await sb.auth.getSession();if(session){user=session.user;return}const {data,error}=await sb.auth.signInAnonymously();if(error)throw new Error("Anonymous sign-in is not enabled in Supabase.");user=data.user}
 async function loadProfile(){const {data,error}=await sb.from("player_profiles").select("*").eq("user_id",user.id).maybeSingle();if(error)throw error;profile=data}
-async function loadData(){const a=await sb.from("appointments").select("slot_key,event_day,minister_role,player_name,alliance");if(a.error)throw a.error;appointments=a.data||[];if(profile){const r=await sb.from("slot_requests").select("id,slot_key,event_day,minister_role,status").eq("profile_id",profile.id);if(r.error)throw r.error;myRequests=r.data||[]}else myRequests=[]}
-function apFor(k){return appointments.find(a=>a.slot_key===k)||null}
-function mineFor(k){return myRequests.find(r=>r.slot_key===k&&["pending","confirmed"].includes(r.status))||null}
-function profileUI(){
-  const ok=!!profile;
-  const status=$("profileStatus");
-  if(status){
-    status.textContent=ok?`✓ ${profile.alliance} · ${profile.player_name} · ID ${profile.player_id}`:t("profile_required");
-    status.className=`profile-status ${ok?"complete":"incomplete"}`;
-  }
-  if($("lockedPanel"))$("lockedPanel").hidden=ok;
-  if($("selectionPanel"))$("selectionPanel").hidden=!ok;
-  if(!ok&&$("profileDialog")&&!$("profileDialog").open)openProfile(false);
+async function loadData(){
+  const [a,activity]=await Promise.all([
+    sb.from("appointments").select("slot_key,event_day,minister_role,player_name,alliance"),
+    sb.rpc("get_public_slot_activity")
+  ]);
+  if(a.error)throw a.error;
+  if(activity.error)throw activity.error;
+  appointments=a.data||[];
+  publicActivity=activity.data||[];
+  if(profile){
+    const r=await sb.from("slot_requests").select("id,slot_key,event_day,minister_role,status").eq("profile_id",profile.id);
+    if(r.error)throw r.error;
+    myRequests=r.data||[];
+  }else myRequests=[];
 }
 function render(){
   applyStatic();renderTips();
@@ -102,8 +103,17 @@ function render(){
     const row=document.createElement("div");row.className="slot"+(s.cross?" cross":"")+(ap?" confirmed":mine?" pending":"")+(selected.has(s.key)?" selected":"");
     const cb=document.createElement("input");cb.type="checkbox";cb.checked=selected.has(s.key);cb.disabled=!profile||!!ap;cb.onclick=e=>{e.stopPropagation();toggle(s.key)};
     const tm=document.createElement("div");tm.className="slot-time";tm.textContent=s.display;
-    const main=document.createElement("div");main.className="slot-main";main.innerHTML=ap?`<span class="alliance">${esc(ap.alliance)}</span><strong>${esc(ap.player_name)}</strong>`:mine?`<span class="muted">${t("your_pending")}</span>`:`<span class="muted">${t("available")}</span>`;
-    const st=document.createElement("div");st.className="slot-status";st.textContent=ap?`✓ ${t("confirmed")}`:mine?t("pending"):"";
+    const pendingRows=pendingFor(s.key);
+    const main=document.createElement("div");main.className="slot-main";
+    if(ap){
+      main.innerHTML=`<span class="alliance">${esc(ap.alliance)}</span><strong>${esc(ap.player_name)}</strong>`;
+    }else if(pendingRows.length){
+      main.innerHTML=`<div class="pending-stack">${visiblePendingNames(s.key)}</div>`;
+    }else{
+      main.innerHTML=`<span class="muted">${t("available")}</span>`;
+    }
+    const st=document.createElement("div");st.className="slot-status";
+    st.textContent=ap?`✓ ${t("confirmed")}`:pendingRows.length?`${pendingRows.length} ${t("pending")}`:"";
     row.append(cb,tm,main,st);row.onclick=()=>{if(profile&&!ap)toggle(s.key)};list.appendChild(row);
   }
   $("scheduleSummary").textContent=t("confirmed_count",{n:confirmed});

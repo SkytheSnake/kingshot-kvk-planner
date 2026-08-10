@@ -1,25 +1,36 @@
-# Kingshot KvK Planner — Theme Selector Update
+# KvK Planner — Strong Themes + Public Pending Requests
 
-Adds a colour-theme dropdown beside the language selector on both the player planner and admin page.
+## Changes
 
-Themes:
-- Pink
-- Purple
-- Teal
-- Green
+### Stronger themes
+The four theme options now change much more than the button colour:
 
-The selected theme is saved in the browser and stays selected on future visits.
+- Pink — dark neon pink / berry
+- Purple — deeper synthwave violet
+- Teal — cyber teal / aqua
+- Green — dark terminal / emerald
 
-This update keeps all existing functionality:
-- profile gate
-- Player ID recovery
-- shared Supabase bookings
-- 3–5 slot requests
-- translations
-- admin dashboard
-- retro dark styling
+Each theme changes the page background, header, panels, borders, slots, controls, glows and accents while keeping the planner layout identical.
 
-## Upload to GitHub
+### Pending requests visible to players
+Players can now see who else has requested a slot.
+
+Example:
+`KCB Sky   VIK Nicky Boy    2 Pending`
+
+Only these public details are returned:
+- player name
+- alliance
+- requested slot
+- pending/confirmed status
+
+Resource totals remain admin-only.
+
+## Supabase step REQUIRED
+
+Run `public_pending_requests.sql` once in Supabase SQL Editor.
+
+## GitHub upload
 
 Replace:
 - index.html
@@ -29,10 +40,8 @@ Replace:
 - admin.js
 - README.md
 
-You can keep your current:
+Keep:
 - config.js
 - translations.js
 
-The HTML has cache-busting version `20260810-1247-theme` to avoid GitHub Pages serving mixed old/new files.
-
-No Supabase changes are needed.
+No existing tables need deleting.
