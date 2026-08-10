@@ -46,23 +46,39 @@
 <dialog id="profileDialog">
 <form id="profileForm">
   <button type="button" class="close-btn" data-close="profileDialog">×</button>
-  <h2>Complete your KvK Profile</h2>
-  <p class="muted">You need to complete this before requesting slots. Your resources are saved once and reused across all KvK days.</p>
-  <div class="two-col">
-    <label>Player ID<input id="playerId" required inputmode="numeric" placeholder="Player ID"></label>
-    <label>Player Name<input id="playerName" required placeholder="Current IGN"></label>
+  <h2 id="profileDialogTitle">Find your KvK Profile</h2>
+  <p id="profileIntro" class="muted">Enter your Kingshot Player ID. If you have used the planner before, your existing profile will load automatically.</p>
+
+  <label>Player ID
+    <div class="player-id-row">
+      <input id="playerId" required inputmode="numeric" placeholder="Player ID">
+      <button id="findProfileBtn" type="button" class="primary">Continue</button>
+    </div>
+  </label>
+
+  <div id="profileDetails" hidden>
+    <div class="two-col">
+      <label>Player Name<input id="playerName" required placeholder="Current IGN"></label>
+      <label>Alliance<select id="alliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select></label>
+    </div>
+
+    <div class="resource-box">
+      <h3>Resource Snapshot</h3>
+      <label>🏆 Truegold <input id="truegold" type="number" min="0" step="1" value="0"></label>
+      <label>💨 General Speed Up (Hours) <input id="general" type="number" min="0" step="0.5" value="0"></label>
+      <label>📘 Research Speed Up (Hours) <input id="research" type="number" min="0" step="0.5" value="0"></label>
+      <label>⚔️ Training Speed Up (Hours) <input id="training" type="number" min="0" step="0.5" value="0"></label>
+      <label>🏗️ Construction Speed Up (Hours) <input id="construction" type="number" min="0" step="0.5" value="0"></label>
+    </div>
   </div>
-  <label>Alliance<select id="alliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select></label>
-  <div class="resource-box">
-    <h3>Resource Snapshot</h3>
-    <label>🏆 Truegold <input id="truegold" type="number" min="0" step="1" value="0"></label>
-    <label>💨 General Speed Up (Hours) <input id="general" type="number" min="0" step="0.5" value="0"></label>
-    <label>📘 Research Speed Up (Hours) <input id="research" type="number" min="0" step="0.5" value="0"></label>
-    <label>⚔️ Training Speed Up (Hours) <input id="training" type="number" min="0" step="0.5" value="0"></label>
-    <label>🏗️ Construction Speed Up (Hours) <input id="construction" type="number" min="0" step="0.5" value="0"></label>
-  </div>
+
+  <div id="profileLookupStatus" class="lookup-status" hidden></div>
   <div id="profileError" class="form-error" hidden></div>
-  <div class="dialog-actions"><button type="button" class="secondary" data-close="profileDialog">Cancel</button><button type="submit" class="primary">Save Profile</button></div>
+
+  <div class="dialog-actions">
+    <button type="button" class="secondary" data-close="profileDialog">Cancel</button>
+    <button id="saveProfileBtn" type="submit" class="primary" hidden>Save Profile</button>
+  </div>
 </form>
 </dialog>
 

@@ -1,10 +1,36 @@
-# Kingshot KvK Planner — Supabase shared version
+# Kingshot KvK Planner — Player ID return-login update
 
-1. Run `supabase_patch.sql` in Supabase SQL Editor.
-2. Enable Anonymous Sign-Ins in Supabase: Authentication → Sign In / Providers → Anonymous.
-3. Upload `index.html`, `admin.html`, `style.css`, `config.js`, `app.js`, and `admin.js` to GitHub.
-4. The old `script.js` is no longer used and can be deleted.
+This version fixes the issue where a returning player saw “Player ID already registered” after losing their anonymous browser session.
 
-The publishable key in `config.js` is browser-safe with RLS enabled. Never add a Secret key or service_role key to GitHub.
+## Required Supabase change
 
-Players use anonymous Supabase sessions so they do not need email accounts. Admins use the protected `admin.html` login.
+Before uploading these files, run the `claim_player_profile` SQL function in Supabase SQL Editor.
+
+The player flow is now:
+
+1. Enter Player ID.
+2. Existing Player ID → profile is claimed by the current browser session and loaded automatically.
+3. New Player ID → the full profile/resource form appears.
+4. The player can then request 3–5 slots as normal.
+
+There is no player password/PIN because this planner treats Player IDs and resource information as non-private for this use case.
+
+## GitHub files to replace
+
+Upload these files over the current versions:
+
+- `index.html`
+- `style.css`
+- `app.js`
+- `README.md`
+
+You do NOT need to replace:
+- `admin.html`
+- `admin.js`
+- `config.js`
+
+Those are unchanged.
+
+## Admin security
+
+The admin area remains protected by Supabase Auth and the `admin_users` table.
