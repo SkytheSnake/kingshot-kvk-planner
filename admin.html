@@ -2,7 +2,7 @@
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KvK Planner Admin</title><link rel="stylesheet" href="style.css"></head>
 <body>
-<header class="topbar"><div><h1>👑 KvK Planner Admin</h1><p>Private allocation dashboard</p></div><div class="top-actions"><a class="secondary button-link" href="index.html">← Player Planner</a><button id="logoutBtn" class="secondary" hidden>Log out</button></div></header>
+<header class="topbar"><div><h1>👑 KvK Planner Admin</h1><p>Private allocation dashboard</p></div><div class="top-actions"><select id="languageSelect" class="language-select" aria-label="Language"></select><a class="secondary button-link" href="index.html">← Player Planner</a><button id="logoutBtn" class="secondary" hidden>Log out</button></div></header>
 <main>
 <section id="adminLoginCard" class="card login-card">
   <h2>Admin Login</h2><p class="muted">Only approved owner, King and Minister accounts can access allocations and resource totals.</p>
@@ -19,5 +19,5 @@
 </div>
 </main>
 <dialog id="applicantDialog"><button type="button" class="close-btn" data-close="applicantDialog">×</button><h2>Slot Requests</h2><p id="applicantSlotLabel" class="muted"></p><div id="applicantList"></div></dialog>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="translations.js"></script><script src="admin.js"></script>
 </body></html>

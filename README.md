@@ -1,36 +1,28 @@
-# Kingshot KvK Planner — Player ID return-login update
+# Kingshot KvK Planner — multilingual update
 
-This version fixes the issue where a returning player saw “Player ID already registered” after losing their anonymous browser session.
+Languages included:
+- English
+- Traditional Chinese
+- French
+- German
+- Spanish
+- Turkish
+- Dutch
+- Korean
+- Japanese
+- Filipino
 
-## Required Supabase change
+The language selector appears in both the player planner and admin page. The selected language is remembered in the browser.
 
-Before uploading these files, run the `claim_player_profile` SQL function in Supabase SQL Editor.
+Upload/replace these files in GitHub:
+- index.html
+- admin.html
+- style.css
+- app.js
+- admin.js
+- translations.js
+- README.md
 
-The player flow is now:
+Keep your existing `config.js`.
 
-1. Enter Player ID.
-2. Existing Player ID → profile is claimed by the current browser session and loaded automatically.
-3. New Player ID → the full profile/resource form appears.
-4. The player can then request 3–5 slots as normal.
-
-There is no player password/PIN because this planner treats Player IDs and resource information as non-private for this use case.
-
-## GitHub files to replace
-
-Upload these files over the current versions:
-
-- `index.html`
-- `style.css`
-- `app.js`
-- `README.md`
-
-You do NOT need to replace:
-- `admin.html`
-- `admin.js`
-- `config.js`
-
-Those are unchanged.
-
-## Admin security
-
-The admin area remains protected by Supabase Auth and the `admin_users` table.
+No new Supabase SQL is required for this translation update.

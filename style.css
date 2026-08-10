@@ -4,3 +4,7 @@ body{margin:0;background:#050914;color:#f6f8fb;font-family:Inter,system-ui,sans-
 .lookup-status{margin:10px 0;padding:9px;border-radius:8px;background:#0b302a;color:#35d9ae;font-size:11px}
 .lookup-status.new{background:#241e10;color:#f1c05a}
 @media(max-width:600px){.player-id-row{grid-template-columns:1fr}.player-id-row .primary{width:100%}}
+
+.language-select{background:#0b1422;color:#f6f8fb;border:1px solid #34455f;border-radius:8px;padding:7px 9px;font-weight:700;max-width:180px}
+html[lang="zh-Hant"],html[lang="ko"],html[lang="ja"]{font-family:Inter,system-ui,sans-serif}
+@media(max-width:700px){.language-select{max-width:145px}}
