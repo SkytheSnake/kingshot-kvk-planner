@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>KvK Planner Admin</title>
-  <link rel="stylesheet" href="style.css?v=20260810-1405-admincycle">
+  <link rel="stylesheet" href="style.css?v=20260810-1500-uxadmin">
 </head>
 <body>
 <header class="topbar">
@@ -52,6 +52,25 @@
         <div><strong id="adminRoleTitle">🏛️ Chief Minister</strong><small id="reviewHelp">Click a slot to review applicants.</small></div>
         <div class="badges"><span id="adminPendingBadge" class="badge amber">0 pending</span><span id="adminConfirmedBadge" class="badge green">0 confirmed</span></div>
       </div>
+      <div class="admin-controls">
+        <input id="adminSearch" placeholder="Search player / Player ID">
+        <select id="allianceFilter">
+          <option value="">All alliances</option><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option>
+        </select>
+        <select id="sortApplicants">
+          <option value="best">Best fit</option>
+          <option value="name">Name</option>
+          <option value="alliance">Alliance</option>
+          <option value="truegold">Truegold</option>
+          <option value="general">General speed ups</option>
+          <option value="research">Research speed ups</option>
+          <option value="training">Training speed ups</option>
+          <option value="construction">Construction speed ups</option>
+        </select>
+        <span id="dayLockState" class="badge"></span>
+        <button id="finaliseDayBtn" class="secondary" type="button">Finalise day</button>
+        <button id="reopenDayBtn" class="secondary" type="button" hidden>Reopen day</button>
+      </div>
       <div id="adminCrossoverNote" class="note" hidden>🔁 Tuesday's first slot is the linked Monday 23:45 → Tuesday 00:15 Chief Minister appointment.</div>
       <div id="adminSlotList" class="slot-list"></div>
     </section>
@@ -60,6 +79,28 @@
         <div><strong id="rejectionLogTitle">Rejection Log</strong><small id="rejectionLogHelp">Keep track of rejected applications so someone can contact the player if needed.</small></div>
       </div>
       <div id="rejectionLog" class="rejection-log"></div>
+    </section>
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="needsAttentionTitle">Needs Attention</strong><small id="needsAttentionHelp">Rejected applicants who have not yet been marked contacted.</small></div>
+      </div>
+      <div id="needsAttentionList" class="rejection-log"></div>
+    </section>
+
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="activityLogTitle">Admin Activity Log</strong><small>Recent admin changes are recorded here.</small></div>
+        <button id="undoLastBtn" class="secondary" type="button">Undo last admin action</button>
+      </div>
+      <div id="activityLog" class="activity-log"></div>
+    </section>
+
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="historyTitle">KvK History</strong><small>Read-only snapshots of previous KvKs.</small></div>
+        <button id="archiveCycleBtn" class="secondary owner-only-btn" type="button" hidden>Archive current KvK</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
     </section>
   </div>
 </main>
@@ -91,8 +132,8 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-1405-admincycle"></script>
-<script src="translations.js?v=20260810-1405-admincycle"></script>
-<script src="admin.js?v=20260810-1405-admincycle"></script>
+<script src="config.js?v=20260810-1500-uxadmin"></script>
+<script src="translations.js?v=20260810-1500-uxadmin"></script>
+<script src="admin.js?v=20260810-1500-uxadmin"></script>
 </body>
 </html>

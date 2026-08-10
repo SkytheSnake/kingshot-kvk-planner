@@ -66,16 +66,74 @@ function requestsOpen(day=currentDay){
   return Date.now() < applicationDeadline(day).getTime();
 }
 
+function dayFinalised(day=currentDay){
+  return !!daySettings.find(x=>x.event_day===day)?.is_finalised;
+}
+
+function currentConfirmedAppointment(){
+  if(!profile) return null;
+  const ownConfirmed=myRequests.find(r=>r.event_day===currentDay && r.status==="confirmed");
+  if(!ownConfirmed) return null;
+  return appointmentFor(ownConfirmed.slot_key);
+}
+
+function formatCountdown(ms){
+  if(ms<=0) return "0m";
+  const totalMinutes=Math.floor(ms/60000);
+  const days=Math.floor(totalMinutes/1440);
+  const hours=Math.floor((totalMinutes%1440)/60);
+  const mins=totalMinutes%60;
+  return [days?`${days}d`:null,hours?`${hours}h`:null,`${mins}m`].filter(Boolean).join(" ");
+}
+
+function renderConfirmedBanner(){
+  const banner=$("confirmedAppointmentBanner");
+  if(!banner) return;
+  const own=myRequests.find(r=>r.event_day===currentDay && r.status==="confirmed");
+  if(!own){ banner.hidden=true; return; }
+
+  let slotLabel=own.slot_key;
+  for(let i=0;i<DAYS[currentDay].slotCount;i++){
+    const s=getSlot(currentDay,i);
+    if(s.key===own.slot_key){ slotLabel=s.full; break; }
+  }
+
+  banner.textContent=t("confirmed_banner",{role:roleText(currentDay),time:slotLabel});
+  banner.hidden=false;
+}
+
+function renderReplaceWarning(){
+  const el=$("replaceWarning");
+  if(!el) return;
+  const hasExisting=myRequests.some(r=>r.event_day===currentDay && r.status==="pending");
+  el.hidden=!hasExisting;
+  if(hasExisting) el.textContent=t("replace_warning");
+}
+
 function renderDeadline(){
   const deadline=applicationDeadline(currentDay);
-  const open=requestsOpen(currentDay);
+  const finalised=dayFinalised(currentDay);
+  const open=requestsOpen(currentDay) && !finalised;
   const info=document.querySelector(".info-bar");
+
   if(info){
     info.classList.toggle("deadline-open",open);
     info.classList.toggle("deadline-closed",!open);
   }
-  if($("deadlineText")) $("deadlineText").textContent=t(open?"applications_close":"applications_closed",{date:formatDeadlineDate(deadline)});
-  if($("deadlineState")) $("deadlineState").textContent=t(open?"open_for_requests":"closed_for_requests");
+
+  if($("deadlineText")){
+    $("deadlineText").textContent=finalised
+      ? t("day_finalised")
+      : t(open?"applications_close":"applications_closed",{date:formatDeadlineDate(deadline)});
+  }
+
+  if($("deadlineState")){
+    $("deadlineState").textContent=finalised?t("read_only"):t(open?"open_for_requests":"closed_for_requests");
+  }
+
+  if($("deadlineCountdown")){
+    $("deadlineCountdown").textContent=open?t("countdown",{time:formatCountdown(deadline.getTime()-Date.now())}):"";
+  }
 }
 
 let currentDay = "monday";
@@ -85,6 +143,8 @@ let profile = null;
 let appointments = [];
 let myRequests = [];
 let publicActivity = [];
+let daySettings = [];
+let countdownTimer = null;
 
 const esc = value => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
@@ -213,16 +273,19 @@ async function loadProfile(){
 }
 
 async function loadSharedData(){
-  const [appointmentsResult, activityResult] = await Promise.all([
+  const [appointmentsResult, activityResult, daySettingsResult] = await Promise.all([
     sb.from("appointments").select("slot_key,event_day,minister_role,player_name,alliance"),
-    sb.rpc("get_public_slot_activity")
+    sb.rpc("get_public_slot_activity"),
+    sb.from("day_settings").select("event_day,is_finalised")
   ]);
 
   if(appointmentsResult.error) throw appointmentsResult.error;
   if(activityResult.error) throw activityResult.error;
+  if(daySettingsResult.error) throw daySettingsResult.error;
 
   appointments = appointmentsResult.data || [];
   publicActivity = activityResult.data || [];
+  daySettings = daySettingsResult.data || [];
 
   if(profile){
     const { data, error } = await sb
@@ -305,6 +368,8 @@ function renderSchedule(){
   applyTranslations();
   renderTips();
   renderDeadline();
+  renderConfirmedBanner();
+  renderReplaceWarning();
 
   $("roleTitle").textContent = `${DAYS[currentDay].icon} ${roleText()}`;
   $("crossoverNote").hidden = currentDay !== "tuesday";
@@ -333,7 +398,7 @@ function renderSchedule(){
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = selected.has(slot.key);
-    checkbox.disabled = !profile || !!appointment || !requestsOpen(currentDay);
+    checkbox.disabled = !profile || !!appointment || !requestsOpen(currentDay) || dayFinalised(currentDay);
     checkbox.addEventListener("click", e => {
       e.stopPropagation();
       toggleSlot(slot.key);
@@ -362,7 +427,7 @@ function renderSchedule(){
 
     row.append(checkbox, time, main, status);
     row.addEventListener("click", () => {
-      if(profile && !appointment && requestsOpen(currentDay)) toggleSlot(slot.key);
+      if(profile && !appointment && requestsOpen(currentDay) && !dayFinalised(currentDay)) toggleSlot(slot.key);
     });
 
     list.appendChild(row);
@@ -373,7 +438,7 @@ function renderSchedule(){
 
   $("selectionCount").textContent = t("selected", {n: selected.size});
   $("selectionCount").classList.toggle("valid", selected.size >= 3 && selected.size <= 5);
-  $("submitBtn").disabled = !profile || !requestsOpen(currentDay) || selected.size < 3 || selected.size > 5;
+  $("submitBtn").disabled = !profile || !requestsOpen(currentDay) || dayFinalised(currentDay) || selected.size < 3 || selected.size > 5;
 
   renderMyRequests();
   updateProfileGate();
@@ -540,7 +605,8 @@ async function saveProfile(event){
     research_speedups: Number($("research").value) || 0,
     training_speedups: Number($("training").value) || 0,
     construction_speedups: Number($("construction").value) || 0,
-    resource_snapshot_required: false
+    resource_snapshot_required: false,
+    resource_updated_at: new Date().toISOString()
   };
 
   if(!payload.player_name){
@@ -567,6 +633,10 @@ async function saveProfile(event){
 }
 
 async function submitRequests(){
+  if(dayFinalised(currentDay)){
+    alert(t("day_finalised"));
+    return;
+  }
   if(!requestsOpen(currentDay)){
     alert(t("deadline_passed"));
     return;
@@ -629,6 +699,8 @@ async function start(){
     setBanner(t("connecting"));
     await ensureAnonymousAuth();
     await refresh();
+    if(countdownTimer) clearInterval(countdownTimer);
+    countdownTimer=setInterval(()=>renderDeadline(),30000);
     setBanner(`✓ ${t("connected")}`, "ok");
   }catch(error){
     console.error(error);

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css?v=20260810-1428-resource-refresh">
+  <link rel="stylesheet" href="style.css?v=20260810-1500-uxadmin">
 </head>
 <body>
 <header class="topbar player-topbar">
@@ -33,12 +33,13 @@
   </nav>
 
   <section id="connectionBanner" class="connection-banner">Connecting to shared planner…</section>
+  <section id="confirmedAppointmentBanner" class="confirmed-appointment-banner" hidden></section>
 
   <section class="info-bar">
     <div>
       <small id="roleSmall">Chief Minister</small>
       <strong>Select 3–5 acceptable slots</strong>
-      <div id="deadlineText" class="deadline-text"></div>
+      <div id="deadlineText" class="deadline-text"></div><div id="deadlineCountdown" class="deadline-countdown"></div>
     </div>
     <span id="deadlineState">UTC</span>
   </section>
@@ -55,8 +56,8 @@
     <button id="lockedProfileBtn" class="primary" type="button">Complete Profile</button>
   </section>
 
-  <section id="selectionPanel" class="selection-panel" hidden>
-    <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p></div>
+  <section id="selectionPanel" class="selection-panel sticky-mobile-submit" hidden>
+    <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p><p id="replaceWarning" class="replace-warning" hidden></p></div>
     <div class="selection-controls">
       <span id="selectionCount">0 of 5 selected</span>
       <button id="submitBtn" class="primary" type="button" disabled>Submit Requests</button>
@@ -123,8 +124,8 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-1428-resource-refresh"></script>
-<script src="translations.js?v=20260810-1428-resource-refresh"></script>
-<script src="app.js?v=20260810-1428-resource-refresh"></script>
+<script src="config.js?v=20260810-1500-uxadmin"></script>
+<script src="translations.js?v=20260810-1500-uxadmin"></script>
+<script src="app.js?v=20260810-1500-uxadmin"></script>
 </body>
 </html>

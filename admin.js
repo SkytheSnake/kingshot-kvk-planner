@@ -19,6 +19,9 @@ let requests = [];
 let appointments = [];
 let activeSlot = null;
 let rejectionLog = [];
+let activityLog=[];
+let daySettings=[];
+let history=[];
 
 const esc = value => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
@@ -134,37 +137,73 @@ function showAdminApp(show){
     $("adminName").textContent=admin.display_name||"Admin";
     $("adminRole").textContent=admin.admin_role.toUpperCase();
     if($("resetKvkBtn")) $("resetKvkBtn").hidden=admin.admin_role!=="owner";
+    if($("archiveCycleBtn")) $("archiveCycleBtn").hidden=admin.admin_role!=="owner";
   }else if($("resetKvkBtn")){
     $("resetKvkBtn").hidden=true;
   }
 }
 
 async function loadAdminData(){
-  const [requestResult,appointmentResult,rejectionResult]=await Promise.all([
+  const [requestResult,appointmentResult,rejectionResult,activityResult,settingsResult,historyResult]=await Promise.all([
     sb.from("slot_requests")
-      .select("id,slot_key,event_day,minister_role,status,profile_id,player_profiles(player_id,player_name,alliance,truegold,general_speedups,research_speedups,training_speedups,construction_speedups)")
+      .select("id,slot_key,event_day,minister_role,status,profile_id,player_profiles(player_id,player_name,alliance,truegold,general_speedups,research_speedups,training_speedups,construction_speedups,resource_updated_at,admin_note)")
       .eq("event_day",currentDay)
       .in("status",["pending","confirmed"]),
     sb.from("appointments").select("*").eq("event_day",currentDay),
-    sb.from("rejection_log").select("*").order("rejected_at",{ascending:false}).limit(200)
+    sb.from("rejection_log").select("*").order("rejected_at",{ascending:false}).limit(200),
+    sb.from("admin_activity_log").select("*").order("created_at",{ascending:false}).limit(100),
+    sb.from("day_settings").select("*"),
+    sb.from("kvk_archive_cycles").select("id,cycle_start,archived_at,archived_by,kvk_archive_appointments(id,event_day,slot_key,minister_role,player_name,alliance)").order("archived_at",{ascending:false}).limit(20)
   ]);
 
   if(requestResult.error) throw requestResult.error;
   if(appointmentResult.error) throw appointmentResult.error;
   if(rejectionResult.error) throw rejectionResult.error;
+  if(activityResult.error) throw activityResult.error;
+  if(settingsResult.error) throw settingsResult.error;
+  if(historyResult.error) throw historyResult.error;
 
   requests=requestResult.data||[];
   appointments=appointmentResult.data||[];
   rejectionLog=rejectionResult.data||[];
+  activityLog=activityResult.data||[];
+  daySettings=settingsResult.data||[];
+  history=historyResult.data||[];
   renderAdmin();
   renderRejectionLog();
+  renderNeedsAttention();
+  renderActivityLog();
+  renderHistory();
 }
 
 function appointmentFor(slotKey){ return appointments.find(a=>a.slot_key===slotKey)||null; }
-function pendingFor(slotKey){ return requests.filter(r=>r.slot_key===slotKey && r.status==="pending"); }
+function pendingFor(slotKey){ return filteredRequests().filter(r=>r.slot_key===slotKey && r.status==="pending"); }
+
+
+function dayFinalised(day=currentDay){
+  return !!daySettings.find(x=>x.event_day===day)?.is_finalised;
+}
+
+function filteredRequests(){
+  const search=($("adminSearch")?.value||"").trim().toLowerCase();
+  const alliance=$("allianceFilter")?.value||"";
+  return requests.filter(r=>{
+    const p=r.player_profiles||{};
+    const matchesSearch=!search || String(p.player_name||"").toLowerCase().includes(search) || String(p.player_id||"").toLowerCase().includes(search);
+    const matchesAlliance=!alliance || p.alliance===alliance;
+    return matchesSearch && matchesAlliance;
+  });
+}
 
 function renderAdmin(){
   applyTranslations();
+  const finalised=dayFinalised(currentDay);
+  if($("dayLockState")){
+    $("dayLockState").textContent=finalised?t("read_only"):t("open");
+    $("dayLockState").className="badge "+(finalised?"amber":"green");
+  }
+  if($("finaliseDayBtn")) $("finaliseDayBtn").hidden=finalised;
+  if($("reopenDayBtn")) $("reopenDayBtn").hidden=!finalised || admin?.admin_role!=="owner";
   $("adminRoleTitle").textContent=`${DAYS[currentDay].icon} ${roleText()}`;
   $("adminCrossoverNote").hidden=currentDay!=="tuesday";
 
@@ -186,6 +225,7 @@ function renderAdmin(){
     row.className=[
       "slot","admin-slot",
       slot.cross?"cross":"",
+      dayFinalised(currentDay)?"readonly-slot":"",
       appointment?"confirmed":(pending.length?"pending":"")
     ].filter(Boolean).join(" ");
 
@@ -229,8 +269,20 @@ function openApplicants(slot){
 function renderApplicants(){
   const box=$("applicantList");
   const active=requests
-    .filter(r=>r.slot_key===activeSlot.key && ["pending","confirmed"].includes(r.status))
-    .sort((a,b)=>score(b)-score(a));
+    .filter(r=>r.slot_key===activeSlot.key && ["pending","confirmed"].includes(r.status));
+
+  const sortMode=$("sortApplicants")?.value||"best";
+  active.sort((a,b)=>{
+    const pa=a.player_profiles||{},pb=b.player_profiles||{};
+    if(sortMode==="name") return String(pa.player_name||"").localeCompare(String(pb.player_name||""));
+    if(sortMode==="alliance") return String(pa.alliance||"").localeCompare(String(pb.alliance||""));
+    if(sortMode==="truegold") return (+pb.truegold||0)-(+pa.truegold||0);
+    if(sortMode==="general") return (+pb.general_speedups||0)-(+pa.general_speedups||0);
+    if(sortMode==="research") return (+pb.research_speedups||0)-(+pa.research_speedups||0);
+    if(sortMode==="training") return (+pb.training_speedups||0)-(+pa.training_speedups||0);
+    if(sortMode==="construction") return (+pb.construction_speedups||0)-(+pa.construction_speedups||0);
+    return score(b)-score(a);
+  });
 
   const appointment=appointmentFor(activeSlot.key);
 
@@ -252,14 +304,20 @@ function renderApplicants(){
       </div>
       <div class="resource-summary">
         🏆 ${p.truegold||0} TG · 💨 ${p.general_speedups||0}h · 📘 ${p.research_speedups||0}h · ⚔️ ${p.training_speedups||0}h · 🏗️ ${p.construction_speedups||0}h
+        <div class="resource-freshness">${t("resource_updated")}: ${p.resource_updated_at?new Date(p.resource_updated_at).toLocaleString(undefined,{timeZone:"UTC",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false})+" UTC":t("never")}</div>
+      </div>
+      <div class="note-editor">
+        <label>${t("admin_notes")}<textarea class="admin-note">${esc(p.admin_note||"")}</textarea></label>
+        <div class="note-actions"><button class="secondary save-note" type="button">${t("save_note")}</button></div>
       </div>
       <div class="applicant-actions">
-        <button class="primary award" type="button">${confirmed?t("confirmed"):t("award")}</button>
-        <button class="danger reject" type="button">${t("reject")}</button>
+        <button class="primary award" type="button" ${dayFinalised(currentDay)?"disabled":""}>${confirmed?t("confirmed"):t("award")}</button>
+        <button class="danger reject" type="button" ${dayFinalised(currentDay)?"disabled":""}>${t("reject")}</button>
       </div>`;
 
     card.querySelector(".award").addEventListener("click",()=>awardRequest(request.id));
     card.querySelector(".reject").addEventListener("click",()=>rejectRequest(request.id));
+    card.querySelector(".save-note").addEventListener("click",()=>saveAdminNote(request.profile_id,card.querySelector(".admin-note").value));
     box.appendChild(card);
   });
 }
@@ -293,6 +351,9 @@ async function submitManualBooking(event){
   event.preventDefault();
   const errorBox=$("manualBookingError");
   errorBox.hidden=true;
+
+  const conflict=requests.find(r=>r.player_profiles?.player_id===$("manualPlayerId").value.trim() && r.status==="confirmed" && r.event_day===currentDay);
+  if(conflict && !confirm(t("manual_conflict_confirm"))) return;
 
   const { error }=await sb.rpc("admin_manual_assign",{
     p_event_day:currentDay,
@@ -365,7 +426,97 @@ async function resetKvk(){
   alert(t("reset_done"));
 }
 
+
+async function saveAdminNote(profileId,note){
+  const { error }=await sb.rpc("set_admin_note",{p_profile_id:profileId,p_note:note});
+  if(error){alert(error.message);return}
+  alert(t("notes_saved"));
+  await loadAdminData();
+}
+
+function renderNeedsAttention(){
+  const box=$("needsAttentionList");
+  if(!box) return;
+  const rows=rejectionLog.filter(x=>!x.contacted);
+  if(!rows.length){
+    box.innerHTML=`<p class="muted" style="padding:8px">${t("none_need_attention")}</p>`;
+    return;
+  }
+  box.innerHTML=rows.map(x=>`<div class="rejection-row">
+    <span class="alliance">${esc(x.alliance||"")}</span>
+    <div class="rejection-main"><strong>${esc(x.player_name)} · ID ${esc(x.player_id)}</strong><div class="rejection-meta">${esc(x.event_day)} · ${esc(x.slot_key)}</div></div>
+    <div class="rejection-actions"><button class="secondary attention-contact" data-id="${x.id}" type="button">${t("mark_contacted")}</button></div>
+  </div>`).join("");
+  box.querySelectorAll(".attention-contact").forEach(btn=>btn.addEventListener("click",()=>markContacted(btn.dataset.id)));
+}
+
+function renderActivityLog(){
+  const box=$("activityLog");
+  if(!box) return;
+  if(!activityLog.length){
+    box.innerHTML='<p class="muted" style="padding:8px">No admin activity yet.</p>';
+    return;
+  }
+  box.innerHTML=activityLog.map(x=>{
+    const when=new Date(x.created_at).toLocaleString(undefined,{timeZone:"UTC",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false})+" UTC";
+    return `<div class="activity-row"><strong>${esc(x.action_type)}</strong><div class="activity-meta">${esc(x.actor_name||"Admin")} · ${esc(when)}${x.summary?` · ${esc(x.summary)}`:""}</div></div>`;
+  }).join("");
+}
+
+function renderHistory(){
+  const box=$("historyList");
+  if(!box) return;
+  if(!history.length){
+    box.innerHTML='<p class="muted" style="padding:8px">No archived KvKs yet.</p>';
+    return;
+  }
+  box.innerHTML=history.map(c=>{
+    const apps=c.kvk_archive_appointments||[];
+    return `<div class="history-row"><strong>${t("archive_name",{date:esc(c.cycle_start)})}</strong><div class="history-meta">${apps.length} confirmed appointments · archived ${new Date(c.archived_at).toLocaleDateString()}</div></div>`;
+  }).join("");
+}
+
+async function finaliseDay(){
+  if(!confirm(t("finalise_confirm"))) return;
+  const { error }=await sb.rpc("set_day_finalised",{p_event_day:currentDay,p_finalised:true});
+  if(error){alert(error.message);return}
+  await loadAdminData();
+}
+
+async function reopenDay(){
+  if(admin?.admin_role!=="owner") return;
+  if(!confirm(t("reopen_confirm"))) return;
+  const { error }=await sb.rpc("set_day_finalised",{p_event_day:currentDay,p_finalised:false});
+  if(error){alert(error.message);return}
+  await loadAdminData();
+}
+
+async function undoLastAction(){
+  const { data,error }=await sb.rpc("undo_last_admin_action");
+  if(error){alert(error.message);return}
+  if(!data){alert(t("nothing_to_undo"));return}
+  alert(t("undo_done"));
+  await loadAdminData();
+  if($("applicantDialog").open) renderApplicants();
+}
+
+async function archiveCurrentCycle(){
+  if(admin?.admin_role!=="owner") return;
+  if(!confirm(t("archive_help"))) return;
+  const { error }=await sb.rpc("archive_current_kvk");
+  if(error){alert(error.message);return}
+  alert(t("archive_done"));
+  await loadAdminData();
+}
+
 function bindEvents(){
+  $("adminSearch").addEventListener("input",renderAdmin);
+  $("allianceFilter").addEventListener("change",renderAdmin);
+  $("sortApplicants").addEventListener("change",()=>{renderAdmin();if($("applicantDialog").open)renderApplicants();});
+  $("finaliseDayBtn").addEventListener("click",finaliseDay);
+  $("reopenDayBtn").addEventListener("click",reopenDay);
+  $("undoLastBtn").addEventListener("click",undoLastAction);
+  $("archiveCycleBtn").addEventListener("click",archiveCurrentCycle);
   $("manualAddBtn").addEventListener("click",openManualBooking);
   $("manualBookingForm").addEventListener("submit",submitManualBooking);
   $("resetKvkBtn").addEventListener("click",resetKvk);
