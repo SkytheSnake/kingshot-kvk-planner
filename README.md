@@ -1,37 +1,65 @@
-# Kingshot KvK Planner
+# Kingshot KvK Planner — v2
 
-A simple GitHub Pages planner for Kingshot KvK Chief Minister bookings.
+This version adds the request/allocation workflow.
 
-## Current schedule logic
+## Days and positions
 
-- Monday — City Construction
-  - starts Sunday at 23:45 UTC
-  - 30-minute slots
-  - final Monday slot is Monday 23:45 → Tuesday 00:15
+### Monday — City Construction
+- Position: Chief Minister
+- Starts Sunday 23:45 UTC
+- 30-minute slots
+- Final Monday slot is Monday 23:45 → Tuesday 00:15
 
-- Tuesday — Basic Skills
-  - first slot is the **same linked booking** as Monday 23:45 → Tuesday 00:15
-  - then continues in 30-minute slots
+### Tuesday — Basic Skills
+- Position: Chief Minister
+- First slot is the same linked Monday 23:45 → Tuesday 00:15 booking
+- 30-minute slots thereafter
 
-- Thursday — Hero Development
-  - starts Wednesday at 23:45 UTC
-  - 30-minute slots
+### Thursday — Hero Development
+- Position: Noble Advisor
+- Starts Wednesday 23:45 UTC
+- 30-minute slots
 
-## Important
+## Alliances
+- PAR
+- VIK
+- KCB
+- FOR
 
-This starter version saves bookings in the user's browser using `localStorage`.
+## New booking flow
+Players submit a **request**, not an automatic booking.
 
-That means it is ideal for testing the layout and schedule, but bookings are **not yet shared between different players/devices**.
+A request stores:
+- Player ID
+- Player name
+- Alliance
+- Backup priority
+- Truegold
+- General speed-ups
+- Research speed-ups
+- Training speed-ups
+- Construction speed-ups
 
-For a live kingdom-wide booking system, connect it to a shared database such as Supabase or Firebase.
+Players can request multiple slots and rank them as 1st/2nd/3rd choice.
 
-## Publish on GitHub Pages
+Admin view lets the King/Minister of Justice:
+- open a slot
+- compare applicants and resources
+- award the slot
+- reject a request
 
-1. Upload `index.html`, `style.css`, and `script.js` to the repository.
-2. Commit the files.
-3. Go to **Settings → Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**.
-5. Select `main` and `/ (root)`.
-6. Save.
+When a slot is awarded, the winning player's other pending requests for that same day/position are withdrawn automatically.
 
-The site will then be available from your GitHub Pages address.
+## Important: this is still a local prototype
+This version still uses `localStorage`, so data is only saved in the browser being used.
+
+The next stage is to connect the planner to Supabase (shared database) and then connect Player ID lookups to a Kingshot player API if a reliable endpoint is available.
+
+## Replace your existing GitHub files
+Upload these files over the top of the current versions:
+- `index.html`
+- `style.css`
+- `script.js`
+- `README.md`
+
+GitHub Pages will redeploy automatically after you commit the changes.

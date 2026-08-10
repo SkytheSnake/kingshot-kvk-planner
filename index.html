@@ -12,7 +12,10 @@
       <div class="brand">⚔️ Sky</div>
       <div class="kingdom">Kingshot KvK Planner</div>
     </div>
-    <div class="alliance-pill">CRN</div>
+    <div class="top-actions">
+      <button id="adminToggle" class="ghost-btn">Admin view</button>
+      <span class="server-pill">PAR · VIK · KCB · FOR</span>
+    </div>
   </header>
 
   <main class="container">
@@ -38,10 +41,13 @@
 
     <section class="notice">
       <div>
-        <small>Booking information</small>
-        <strong>30-minute Chief Minister slots</strong>
+        <small id="roleLabel">Chief Minister</small>
+        <strong>30-minute request slots</strong>
       </div>
-      <span class="notice-pill">UTC</span>
+      <div class="notice-right">
+        <span class="notice-pill">UTC</span>
+        <span class="notice-pill subtle">Requests ≠ confirmed</span>
+      </div>
     </section>
 
     <section class="points-card">
@@ -49,72 +55,125 @@
         <span>💡 <strong>Points Tips</strong></span>
         <span id="pointsArrow">⌄</span>
       </button>
-      <div class="points-content" id="pointsContent">
-        <div class="tip-group">
-          <h4>✅ GREAT FOR POINTS</h4>
-          <div class="chips">
-            <span>Truegold</span><span>Construction speed up</span>
-            <span>Intel missions</span><span>Master skills</span>
-          </div>
-        </div>
-        <div class="tip-group">
-          <h4>🟧 OK FOR POINTS</h4>
-          <div class="chips amber">
-            <span>Charms</span><span>Research speed up</span>
-          </div>
-        </div>
-        <div class="tip-group muted">
-          <h4>⛔ SKIP TODAY</h4>
-          <div class="chips muted-chips">
-            <span>Troop speed up</span><span>Roulette</span><span>Shards</span>
-            <span>Gather rss</span><span>Level up pets</span><span>Refinement pets</span>
-            <span>Forgehammer</span><span>Widgets</span><span>Mithril</span>
-          </div>
-        </div>
-      </div>
+      <div class="points-content" id="pointsContent"></div>
     </section>
 
     <section class="minister-card">
       <div class="minister-header">
         <div>
-          <div class="minister-title">🏛️ Chief Minister</div>
+          <div class="minister-title" id="ministerTitle">🏛️ Chief Minister</div>
           <div class="minister-subtitle" id="slotSummary"></div>
         </div>
         <div class="header-badges">
-          <span class="confirmed-count" id="confirmedCount">0 booked</span>
+          <span class="request-count" id="requestCount">0 requests</span>
+          <span class="confirmed-count" id="confirmedCount">0 confirmed</span>
         </div>
       </div>
 
       <div class="carryover-note" id="carryoverNote" hidden>
-        🔁 This first Tuesday slot is the same booking as Monday 23:45–00:15.
+        🔁 Tuesday’s first slot is the same Chief Minister booking as Monday 23:45 → Tuesday 00:15.
+      </div>
+
+      <div class="admin-banner" id="adminBanner" hidden>
+        👑 Admin view is on. Open any slot to compare applicants and award it.
       </div>
 
       <div class="slots" id="slots"></div>
     </section>
+
+    <section class="my-requests-card">
+      <div class="section-heading">
+        <div>
+          <strong>My requests</strong>
+          <small>Backup choices can be ranked 1st, 2nd, 3rd, etc.</small>
+        </div>
+        <button id="clearMine" class="ghost-btn small">Clear my test data</button>
+      </div>
+      <div id="myRequests" class="my-requests-list"></div>
+    </section>
   </main>
 
-  <dialog id="bookingDialog">
-    <form method="dialog" id="bookingForm">
+  <dialog id="requestDialog">
+    <form method="dialog" id="requestForm">
       <button class="dialog-close" value="cancel" aria-label="Close">×</button>
-      <h2>Book Chief Minister</h2>
+      <h2 id="requestDialogTitle">Request slot</h2>
       <p class="dialog-slot" id="dialogSlot"></p>
 
-      <label>
-        Player name
-        <input id="playerName" maxlength="30" autocomplete="off" required />
-      </label>
+      <div class="grid-2">
+        <label>
+          Player ID
+          <input id="playerId" inputmode="numeric" maxlength="20" placeholder="e.g. 123456789" required />
+        </label>
+
+        <label>
+          Player name
+          <input id="playerName" maxlength="30" autocomplete="off" placeholder="Temporary until API lookup" required />
+        </label>
+      </div>
 
       <label>
         Alliance
-        <input id="allianceName" maxlength="8" value="CRN" autocomplete="off" />
+        <select id="allianceName" required>
+          <option value="PAR">PAR</option>
+          <option value="VIK">VIK</option>
+          <option value="KCB">KCB</option>
+          <option value="FOR">FOR</option>
+        </select>
       </label>
 
+      <label>
+        Backup priority
+        <select id="priority">
+          <option value="1">1st choice</option>
+          <option value="2">2nd choice</option>
+          <option value="3">3rd choice</option>
+          <option value="4">4th choice</option>
+          <option value="5">5th choice</option>
+        </select>
+      </label>
+
+      <div class="resources-box">
+        <h3>Resources</h3>
+        <div class="resource-row">
+          <span>🏆 Truegold</span>
+          <input id="truegold" type="number" min="0" step="1" value="0" />
+        </div>
+        <div class="resource-row">
+          <span>💨 General Speed Up (Hours)</span>
+          <input id="generalSpeed" type="number" min="0" step="0.5" value="0" />
+        </div>
+        <div class="resource-row">
+          <span>📘 Research Speed Up (Hours)</span>
+          <input id="researchSpeed" type="number" min="0" step="0.5" value="0" />
+        </div>
+        <div class="resource-row">
+          <span>⚔️ Training Speed Up (Hours)</span>
+          <input id="trainingSpeed" type="number" min="0" step="0.5" value="0" />
+        </div>
+        <div class="resource-row">
+          <span>🏗️ Construction Speed Up (Hours)</span>
+          <input id="constructionSpeed" type="number" min="0" step="0.5" value="0" />
+        </div>
+      </div>
+
+      <p class="helper">
+        This creates a request, not an automatic booking. The King/Minister of Justice can award the slot after comparing requests.
+      </p>
+
       <div class="dialog-actions">
-        <button type="button" class="danger-btn" id="deleteBooking" hidden>Remove booking</button>
-        <button type="button" class="secondary-btn" id="cancelBooking">Cancel</button>
-        <button type="submit" class="primary-btn">Save booking</button>
+        <button type="button" class="secondary-btn" id="cancelRequest">Cancel</button>
+        <button type="submit" class="primary-btn">Request slot</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="adminDialog">
+    <div>
+      <button class="dialog-close" id="adminClose" aria-label="Close">×</button>
+      <h2>Slot requests</h2>
+      <p class="dialog-slot" id="adminSlotLabel"></p>
+      <div id="adminApplicants" class="applicant-list"></div>
+    </div>
   </dialog>
 
   <script src="script.js"></script>
