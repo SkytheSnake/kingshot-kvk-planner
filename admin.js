@@ -18,6 +18,7 @@ let admin = null;
 let requests = [];
 let appointments = [];
 let activeSlot = null;
+let rejectionLog = [];
 
 const esc = value => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
@@ -87,6 +88,16 @@ function applyTranslations(){
   setText(".admin-welcome > span",t("private_data"));
   if($("reviewHelp")) $("reviewHelp").textContent=t("review");
   setText("#applicantDialog h2",t("slot_requests"));
+  if($("manualAddBtn")) $("manualAddBtn").textContent=t("manual_add");
+  if($("manualBookingTitle")) $("manualBookingTitle").textContent=t("manual_booking");
+  if($("manualBookingHelp")) $("manualBookingHelp").textContent=t("manual_add_help");
+  if($("manualPlayerIdLabel")) $("manualPlayerIdLabel").textContent=t("manual_player_id");
+  if($("manualPlayerNameLabel")) $("manualPlayerNameLabel").textContent=t("manual_player_name");
+  if($("manualAllianceLabel")) $("manualAllianceLabel").textContent=t("manual_alliance");
+  if($("manualBookingConfirm")) $("manualBookingConfirm").textContent=t("manual_confirm");
+  if($("rejectionLogTitle")) $("rejectionLogTitle").textContent=t("rejection_log");
+  if($("rejectionLogHelp")) $("rejectionLogHelp").textContent=t("rejection_help");
+  if($("resetKvkBtn")) $("resetKvkBtn").textContent=t("reset_kvk");
   if($("adminCrossoverNote")) $("adminCrossoverNote").textContent="🔁 "+t("crossover");
 
   document.querySelectorAll(".day-tab").forEach(btn=>{
@@ -122,24 +133,31 @@ function showAdminApp(show){
   if(show){
     $("adminName").textContent=admin.display_name||"Admin";
     $("adminRole").textContent=admin.admin_role.toUpperCase();
+    if($("resetKvkBtn")) $("resetKvkBtn").hidden=admin.admin_role!=="owner";
+  }else if($("resetKvkBtn")){
+    $("resetKvkBtn").hidden=true;
   }
 }
 
 async function loadAdminData(){
-  const [requestResult,appointmentResult]=await Promise.all([
+  const [requestResult,appointmentResult,rejectionResult]=await Promise.all([
     sb.from("slot_requests")
       .select("id,slot_key,event_day,minister_role,status,profile_id,player_profiles(player_id,player_name,alliance,truegold,general_speedups,research_speedups,training_speedups,construction_speedups)")
       .eq("event_day",currentDay)
       .in("status",["pending","confirmed"]),
-    sb.from("appointments").select("*").eq("event_day",currentDay)
+    sb.from("appointments").select("*").eq("event_day",currentDay),
+    sb.from("rejection_log").select("*").order("rejected_at",{ascending:false}).limit(200)
   ]);
 
   if(requestResult.error) throw requestResult.error;
   if(appointmentResult.error) throw appointmentResult.error;
+  if(rejectionResult.error) throw rejectionResult.error;
 
   requests=requestResult.data||[];
   appointments=appointmentResult.data||[];
+  rejectionLog=rejectionResult.data||[];
   renderAdmin();
+  renderRejectionLog();
 }
 
 function appointmentFor(slotKey){ return appointments.find(a=>a.slot_key===slotKey)||null; }
@@ -254,13 +272,103 @@ async function awardRequest(requestId){
 }
 
 async function rejectRequest(requestId){
-  const { error }=await sb.from("slot_requests").update({status:"rejected"}).eq("id",requestId);
+  const reason=prompt(t("reason")+" (optional):")||null;
+  const { error }=await sb.rpc("reject_slot_request",{p_request_id:requestId,p_reason:reason});
   if(error){alert(error.message);return}
   await loadAdminData();
   renderApplicants();
 }
 
+
+function openManualBooking(){
+  if(!activeSlot) return;
+  $("manualBookingError").hidden=true;
+  $("manualPlayerId").value="";
+  $("manualPlayerName").value="";
+  $("manualAlliance").value="KCB";
+  $("manualBookingDialog").showModal();
+}
+
+async function submitManualBooking(event){
+  event.preventDefault();
+  const errorBox=$("manualBookingError");
+  errorBox.hidden=true;
+
+  const { error }=await sb.rpc("admin_manual_assign",{
+    p_event_day:currentDay,
+    p_slot_key:activeSlot.key,
+    p_player_id:$("manualPlayerId").value.trim(),
+    p_player_name:$("manualPlayerName").value.trim(),
+    p_alliance:$("manualAlliance").value
+  });
+
+  if(error){
+    errorBox.textContent=error.message;
+    errorBox.hidden=false;
+    return;
+  }
+
+  $("manualBookingDialog").close();
+  $("applicantDialog").close();
+  await loadAdminData();
+  alert(t("manual_added"));
+}
+
+function renderRejectionLog(){
+  const box=$("rejectionLog");
+  if(!box) return;
+
+  if(!rejectionLog.length){
+    box.innerHTML=`<p class="muted" style="padding:8px">${t("no_rejections")}</p>`;
+    return;
+  }
+
+  box.innerHTML="";
+  rejectionLog.forEach(item=>{
+    const row=document.createElement("div");
+    row.className="rejection-row";
+    const when=new Date(item.rejected_at).toLocaleString(undefined,{timeZone:"UTC",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false})+" UTC";
+
+    row.innerHTML=`
+      <span class="alliance">${esc(item.alliance||"")}</span>
+      <div class="rejection-main">
+        <strong>${esc(item.player_name)} · ID ${esc(item.player_id)}</strong>
+        <div class="rejection-meta">${esc(item.event_day)} · ${esc(item.slot_key)} · ${t("rejected_at")} ${esc(when)}<br>${t("reason")}: ${esc(item.reason||t("no_reason"))}</div>
+      </div>
+      <div class="rejection-actions">
+        ${item.contacted
+          ? `<span class="contacted-badge">${t("contacted")}</span>`
+          : `<button class="secondary contact-btn" type="button">${t("mark_contacted")}</button>`}
+      </div>`;
+
+    const btn=row.querySelector(".contact-btn");
+    if(btn) btn.addEventListener("click",()=>markContacted(item.id));
+    box.appendChild(row);
+  });
+}
+
+async function markContacted(logId){
+  const { error }=await sb.rpc("mark_rejection_contacted",{p_log_id:logId});
+  if(error){alert(error.message);return}
+  await loadAdminData();
+}
+
+async function resetKvk(){
+  if(admin?.admin_role!=="owner") return;
+  const typed=prompt(t("reset_help")+"\n\n"+t("reset_confirm")+":");
+  if(typed!=="RESET") return;
+
+  const { error }=await sb.rpc("reset_kvk_cycle");
+  if(error){alert(error.message);return}
+
+  await loadAdminData();
+  alert(t("reset_done"));
+}
+
 function bindEvents(){
+  $("manualAddBtn").addEventListener("click",openManualBooking);
+  $("manualBookingForm").addEventListener("submit",submitManualBooking);
+  $("resetKvkBtn").addEventListener("click",resetKvk);
   $("loginForm").addEventListener("submit",async event=>{
     event.preventDefault();
     $("loginError").hidden=true;

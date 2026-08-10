@@ -123,3 +123,26 @@ input:focus,select:focus{outline:none;border-color:var(--accent-border);box-shad
 .applicant{margin:7px 0;padding:10px;border:1px solid var(--border);border-radius:5px;background:#0f1019}.applicant.confirmed{border-color:#315e50;background:#101916}.applicant-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.resource-summary{margin:7px 0;color:var(--muted);font-size:10px;line-height:1.6}.applicant-actions{display:flex;gap:7px;flex-wrap:wrap}
 @media(max-width:1220px){.player-topbar{grid-template-columns:minmax(260px,1fr) minmax(240px,auto)}.profile-centre{grid-column:2;justify-self:end}.compact-actions{grid-column:1/-1;justify-content:flex-end}}
 @media(max-width:760px){.topbar,.player-topbar{display:flex;flex-direction:column;align-items:stretch;gap:10px}.brand-block h1{white-space:normal}.profile-centre,.profile-status{width:100%}.compact-actions{flex-wrap:wrap;justify-content:flex-start}.language-select,.theme-select{flex:1 1 140px;width:auto}.slot{grid-template-columns:22px 82px 1fr auto}.slot.admin-slot{grid-template-columns:82px 1fr auto}.selection-panel,.locked-panel{flex-direction:column;align-items:flex-start}.two-col,.player-id-row{grid-template-columns:1fr}.player-id-row .primary{width:100%}}
+
+
+/* KvK deadlines */
+.deadline-text{margin-top:4px;color:var(--muted);font-size:10px}
+.info-bar.deadline-closed{box-shadow:inset 3px 0 0 #9b4556}
+.info-bar.deadline-closed #deadlineState{background:#2b151b;border-color:#743746;color:#eaa1b4}
+.info-bar.deadline-open #deadlineState{background:#10221d;border-color:#326756;color:#72d9b3}
+
+/* Admin extras */
+.admin-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.admin-toolbar>span{padding:5px 8px;border-radius:4px;background:rgba(var(--accent-rgb),.08);border:1px solid var(--accent-border);font-size:10px}
+.owner-only-btn{font-size:10px;padding:6px 9px}
+.manual-add-btn{margin:8px 0 12px;width:100%}
+.rejection-log{padding:8px}
+.rejection-row{
+  margin:5px 0;padding:9px 10px;display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;
+  border:1px solid var(--border);border-radius:5px;background:rgba(0,0,0,.16)
+}
+.rejection-main strong{display:block}
+.rejection-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.45}
+.rejection-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.contacted-badge{padding:4px 7px;border:1px solid #326756;border-radius:4px;background:#10221d;color:#72d9b3;font-size:9px;font-weight:800;text-transform:uppercase}
+@media(max-width:700px){.rejection-row{grid-template-columns:1fr}.rejection-actions{justify-content:flex-start}}

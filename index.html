@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kingshot KvK Planner</title>
-  <link rel="stylesheet" href="style.css?v=20260810-1344-clean">
+  <link rel="stylesheet" href="style.css?v=20260810-1405-admincycle">
 </head>
 <body>
 <header class="topbar player-topbar">
@@ -35,8 +35,12 @@
   <section id="connectionBanner" class="connection-banner">Connecting to shared planner…</section>
 
   <section class="info-bar">
-    <div><small id="roleSmall">Chief Minister</small><strong>Select 3–5 acceptable slots</strong></div>
-    <span>UTC</span>
+    <div>
+      <small id="roleSmall">Chief Minister</small>
+      <strong>Select 3–5 acceptable slots</strong>
+      <div id="deadlineText" class="deadline-text"></div>
+    </div>
+    <span id="deadlineState">UTC</span>
   </section>
 
   <section class="card">
@@ -119,8 +123,8 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-1344-clean"></script>
-<script src="translations.js?v=20260810-1344-clean"></script>
-<script src="app.js?v=20260810-1344-clean"></script>
+<script src="config.js?v=20260810-1405-admincycle"></script>
+<script src="translations.js?v=20260810-1405-admincycle"></script>
+<script src="app.js?v=20260810-1405-admincycle"></script>
 </body>
 </html>

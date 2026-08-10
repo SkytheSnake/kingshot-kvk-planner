@@ -1,64 +1,78 @@
-# Kingshot KvK Planner — clean rebuild
+# Kingshot KvK Planner — Admin & 4-week cycle upgrade
 
-This is the consolidated version rebuilt from scratch after the earlier hotfixes.
+This bundle adds the new admin and deadline features to the clean rebuild.
 
-## Current behaviour
+## New features
 
-- Server 1423 shown in the header.
-- Alliances: PAR, VIK, KCB, FOR.
-- Profile status is centred and prominent.
-- Language, theme, My KvK Profile and Admin Login stay compact on one row on desktop.
-- Dark retro themes: Pink, Purple, Teal, Green.
-- Language support: English, Traditional Chinese, French, German, Spanish, Turkish, Dutch, Italian, Korean, Japanese, Filipino.
-- Player ID recovery/claiming.
-- Saved profile/resources across KvK days.
-- Monday: City Construction / Chief Minister.
-- Tuesday: Basic Skills / Chief Minister.
-- Thursday: Hero Development / Noble Advisor.
-- 30-minute slots starting at 23:45.
-- Monday 23:45 → Tuesday 00:15 and Tuesday's first slot are the same Chief Minister appointment.
-- Players must choose 3–5 acceptable slots.
-- Everyone can see pending player names/alliance on slots.
-- Only admin users can see resource totals.
-- Separate admin page with owner / King / Minister roles.
-- Admins can review applicants, award slots and reject requests.
-- Theme and language choices are remembered in the browser.
+### Manual admin bookings
+On the admin page, click any slot and choose **Add player manually**.
+
+You can enter:
+- Player ID
+- Player name
+- Alliance
+
+The player does not need to log into the planner. The admin booking is immediately confirmed.
+
+### Rejection log
+Rejecting an application now goes through a database function that automatically adds it to the admin **Rejection Log**.
+
+The log stores:
+- Player ID
+- Player name
+- Alliance
+- Day / slot
+- Rejection time
+- Optional reason
+- Whether someone has contacted them
+
+Admins can click **Mark contacted**.
+
+### Owner-only reset
+Only an `owner` admin sees the **Reset KvK** button.
+
+It requires typing `RESET`.
+
+The reset:
+- deletes appointments
+- deletes slot requests
+- clears rejection history
+- keeps player profiles/Player IDs
+- resets saved resource totals to zero so players provide a fresh snapshot for the next KvK
+
+### 4-week deadline cycle
+The cycle is anchored to this KvK beginning Monday 10 August 2026 and repeats every 28 days.
+
+Player application deadlines are always:
+- Monday appointments → Sunday 20:00 UTC
+- Tuesday appointments → Monday 20:00 UTC
+- Thursday appointments → Wednesday 20:00 UTC
+
+The UI disables requests after the deadline, and Supabase enforces the same deadline server-side.
+
+Admins can still manually assign players after a player deadline has closed.
+
+## Required Supabase step
+
+Run:
+
+`supabase_admin_cycle_upgrade.sql`
+
+once in Supabase SQL Editor.
+
+It is a migration for the existing project; it does not delete your current data when installed.
 
 ## GitHub
 
-Replace your site with these files:
+Replace:
 - index.html
 - admin.html
 - style.css
-- config.js
 - translations.js
 - app.js
 - admin.js
 - README.md
 
-Do not keep an old `script.js`.
+Keep your current `config.js` if you prefer; the included one points to the same project.
 
-## Supabase
-
-Your existing project should already contain the main tables/functions.
-
-The included `supabase_public_activity.sql` is safe to run again if needed. It creates/replaces the public pending-request function and reloads the PostgREST schema cache.
-
-## Admin usernames
-
-The admin page accepts either a real email address or a simple username.
-
-For example:
-`king`
-
-is internally converted to:
-`king@kvk-planner.local`
-
-So that Supabase Auth user must exist, and its UID must also be present in `public.admin_users` with role `king`.
-
-## Not included yet
-
-- Kingshot API / automatic name refresh from Player ID.
-- Signup deadline/resource-lock controls.
-
-Cache version: `20260810-1344-clean`
+Cache version: `20260810-1405-admincycle`

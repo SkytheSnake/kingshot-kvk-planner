@@ -38,6 +38,46 @@ const DAYS = {
 
 const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
+const KVK_ANCHOR_UTC = Date.UTC(2026, 7, 10, 0, 0, 0); // Monday 10 Aug 2026
+const KVK_CYCLE_MS = 28 * 24 * 60 * 60 * 1000;
+const DAY_OFFSETS = { monday:0, tuesday:1, thursday:3 };
+
+function plannerCycleStart(nowMs=Date.now()){
+  let n = Math.floor((nowMs - KVK_ANCHOR_UTC) / KVK_CYCLE_MS);
+  if(n < 0) n = 0;
+  let start = KVK_ANCHOR_UTC + n * KVK_CYCLE_MS;
+  const thursdayEnd = start + (4 * 24 * 60 * 60 * 1000);
+  if(nowMs > thursdayEnd) start += KVK_CYCLE_MS;
+  return start;
+}
+
+function applicationDeadline(day, nowMs=Date.now()){
+  const cycleStart = plannerCycleStart(nowMs);
+  const eventOffsetDays = DAY_OFFSETS[day];
+  return new Date(cycleStart + (eventOffsetDays - 1) * 24 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000);
+}
+
+function formatDeadlineDate(date){
+  const localeMap={en:"en-GB",zh_tw:"zh-TW",fr:"fr-FR",de:"de-DE",es:"es-ES",tr:"tr-TR",nl:"nl-NL",it:"it-IT",ko:"ko-KR",ja:"ja-JP",fil:"en-PH"};
+  return new Intl.DateTimeFormat(localeMap[I.current]||"en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(date);
+}
+
+function requestsOpen(day=currentDay){
+  return Date.now() < applicationDeadline(day).getTime();
+}
+
+function renderDeadline(){
+  const deadline=applicationDeadline(currentDay);
+  const open=requestsOpen(currentDay);
+  const info=document.querySelector(".info-bar");
+  if(info){
+    info.classList.toggle("deadline-open",open);
+    info.classList.toggle("deadline-closed",!open);
+  }
+  if($("deadlineText")) $("deadlineText").textContent=t(open?"applications_close":"applications_closed",{date:formatDeadlineDate(deadline)});
+  if($("deadlineState")) $("deadlineState").textContent=t(open?"open_for_requests":"closed_for_requests");
+}
+
 let currentDay = "monday";
 let selected = new Set();
 let user = null;
@@ -251,6 +291,7 @@ function updateProfileGate(){
 function renderSchedule(){
   applyTranslations();
   renderTips();
+  renderDeadline();
 
   $("roleTitle").textContent = `${DAYS[currentDay].icon} ${roleText()}`;
   $("crossoverNote").hidden = currentDay !== "tuesday";
@@ -279,7 +320,7 @@ function renderSchedule(){
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = selected.has(slot.key);
-    checkbox.disabled = !profile || !!appointment;
+    checkbox.disabled = !profile || !!appointment || !requestsOpen(currentDay);
     checkbox.addEventListener("click", e => {
       e.stopPropagation();
       toggleSlot(slot.key);
@@ -308,7 +349,7 @@ function renderSchedule(){
 
     row.append(checkbox, time, main, status);
     row.addEventListener("click", () => {
-      if(profile && !appointment) toggleSlot(slot.key);
+      if(profile && !appointment && requestsOpen(currentDay)) toggleSlot(slot.key);
     });
 
     list.appendChild(row);
@@ -319,7 +360,7 @@ function renderSchedule(){
 
   $("selectionCount").textContent = t("selected", {n: selected.size});
   $("selectionCount").classList.toggle("valid", selected.size >= 3 && selected.size <= 5);
-  $("submitBtn").disabled = !profile || selected.size < 3 || selected.size > 5;
+  $("submitBtn").disabled = !profile || !requestsOpen(currentDay) || selected.size < 3 || selected.size > 5;
 
   renderMyRequests();
   updateProfileGate();
@@ -510,6 +551,10 @@ async function saveProfile(event){
 }
 
 async function submitRequests(){
+  if(!requestsOpen(currentDay)){
+    alert(t("deadline_passed"));
+    return;
+  }
   const { error } = await sb.rpc("submit_slot_requests", {
     p_event_day: currentDay,
     p_slot_keys: [...selected]

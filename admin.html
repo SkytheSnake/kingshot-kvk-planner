@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>KvK Planner Admin</title>
-  <link rel="stylesheet" href="style.css?v=20260810-1344-clean">
+  <link rel="stylesheet" href="style.css?v=20260810-1405-admincycle">
 </head>
 <body>
 <header class="topbar">
@@ -41,7 +41,10 @@
 
     <section class="admin-welcome">
       <div><strong id="adminName">Admin</strong><small id="adminRole"></small></div>
-      <span>Private resource data</span>
+      <div class="admin-toolbar">
+        <span>Private resource data</span>
+        <button id="resetKvkBtn" class="danger owner-only-btn" type="button" hidden>Reset KvK</button>
+      </div>
     </section>
 
     <section class="card">
@@ -52,6 +55,12 @@
       <div id="adminCrossoverNote" class="note" hidden>🔁 Tuesday's first slot is the linked Monday 23:45 → Tuesday 00:15 Chief Minister appointment.</div>
       <div id="adminSlotList" class="slot-list"></div>
     </section>
+    <section class="card rejection-card">
+      <div class="schedule-header">
+        <div><strong id="rejectionLogTitle">Rejection Log</strong><small id="rejectionLogHelp">Keep track of rejected applications so someone can contact the player if needed.</small></div>
+      </div>
+      <div id="rejectionLog" class="rejection-log"></div>
+    </section>
   </div>
 </main>
 
@@ -59,12 +68,31 @@
   <button type="button" class="close-btn" data-close="applicantDialog">×</button>
   <h2>Slot Requests</h2>
   <p id="applicantSlotLabel" class="muted"></p>
+  <button id="manualAddBtn" class="secondary manual-add-btn" type="button">Add player manually</button>
   <div id="applicantList"></div>
 </dialog>
 
+<dialog id="manualBookingDialog">
+  <button type="button" class="close-btn" data-close="manualBookingDialog">×</button>
+  <h2 id="manualBookingTitle">Manual Booking</h2>
+  <p id="manualBookingHelp" class="muted">Create or assign a player to this slot without the player logging in.</p>
+  <form id="manualBookingForm">
+    <label class="field-label"><span id="manualPlayerIdLabel">Player ID</span><input id="manualPlayerId" required inputmode="numeric"></label>
+    <label class="field-label"><span id="manualPlayerNameLabel">Player name</span><input id="manualPlayerName" required></label>
+    <label class="field-label"><span id="manualAllianceLabel">Alliance</span>
+      <select id="manualAlliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select>
+    </label>
+    <div id="manualBookingError" class="form-error" hidden></div>
+    <div class="dialog-actions">
+      <button type="button" class="secondary" data-close="manualBookingDialog">Cancel</button>
+      <button type="submit" class="primary" id="manualBookingConfirm">Confirm manual booking</button>
+    </div>
+  </form>
+</dialog>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-1344-clean"></script>
-<script src="translations.js?v=20260810-1344-clean"></script>
-<script src="admin.js?v=20260810-1344-clean"></script>
+<script src="config.js?v=20260810-1405-admincycle"></script>
+<script src="translations.js?v=20260810-1405-admincycle"></script>
+<script src="admin.js?v=20260810-1405-admincycle"></script>
 </body>
 </html>
