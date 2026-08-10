@@ -1,47 +1,17 @@
-# KvK Planner — Strong Themes + Public Pending Requests
+# apFor hotfix
 
-## Changes
+This fixes the JavaScript error:
 
-### Stronger themes
-The four theme options now change much more than the button colour:
+`apFor is not defined`
 
-- Pink — dark neon pink / berry
-- Purple — deeper synthwave violet
-- Teal — cyber teal / aqua
-- Green — dark terminal / emerald
+The public pending-request code had lost the helper that looks up confirmed appointments.
 
-Each theme changes the page background, header, panels, borders, slots, controls, glows and accents while keeping the planner layout identical.
+## GitHub
 
-### Pending requests visible to players
-Players can now see who else has requested a slot.
+Replace only:
+- `app.js`
+- `index.html`
 
-Example:
-`KCB Sky   VIK Nicky Boy    2 Pending`
+No Supabase changes are needed for this hotfix.
 
-Only these public details are returned:
-- player name
-- alliance
-- requested slot
-- pending/confirmed status
-
-Resource totals remain admin-only.
-
-## Supabase step REQUIRED
-
-Run `public_pending_requests.sql` once in Supabase SQL Editor.
-
-## GitHub upload
-
-Replace:
-- index.html
-- admin.html
-- style.css
-- app.js
-- admin.js
-- README.md
-
-Keep:
-- config.js
-- translations.js
-
-No existing tables need deleting.
+Cache-bust version: `20260810-1332-apfor`

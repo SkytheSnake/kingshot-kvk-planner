@@ -93,6 +93,15 @@ async function loadData(){
     myRequests=r.data||[];
   }else myRequests=[];
 }
+function apFor(k){return appointments.find(a=>a.slot_key===k)||null}
+function mineFor(k){return myRequests.find(r=>r.slot_key===k&&["pending","confirmed"].includes(r.status))||null}
+function pendingFor(k){return publicActivity.filter(r=>r.slot_key===k&&r.status==="pending")}
+function visiblePendingNames(k){
+  const rows=pendingFor(k);
+  if(!rows.length)return "";
+  return rows.map(r=>`<span class="pending-player"><span class="alliance">${esc(r.alliance)}</span><strong>${esc(r.player_name)}</strong></span>`).join("");
+}
+
 function render(){
   applyStatic();renderTips();
   $("roleTitle").textContent=`${DAYS[currentDay].icon} ${roleText()}`;
