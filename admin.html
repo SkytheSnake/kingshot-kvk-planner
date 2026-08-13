@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en" data-theme="pink">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KvK Planner Admin</title>
+  <link rel="stylesheet" href="style.css?v=20260813-clean-v8">
+
+  <link rel="icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#07070b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="KvK Planner">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+
+</head>
+<body>
+<header class="topbar">
+  <div class="brand-block">
+    <h1><span class="server-number">1423</span> 👑 KvK Planner Admin</h1>
+    <p>Private allocation dashboard</p>
+  </div>
+  <div class="top-actions compact-actions">
+    <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option><option value="hi">हिन्दी</option><option value="pa">ਪੰਜਾਬੀ</option><option value="pl">Polski</option><option value="pt">Português</option><option value="ru">Русский</option><option value="ar">العربية</option><option value="vi">Tiếng Việt</option><option value="id">Bahasa Indonesia</option></select>
+    <select id="themeSelect" class="theme-select" aria-label="Theme"><option value="pink">Pink</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="green">Green</option><option value="blue">Blue</option></select>
+    <a class="secondary button-link" href="index.html">← Player Planner</a>
+    <button id="logoutBtn" class="secondary" type="button" hidden>Log out</button>
+  </div>
+</header>
+
+<main>
+  <section id="adminLoginCard" class="card login-card">
+    <h2>Admin Login</h2>
+    <p class="muted">Only approved owner, King and Minister accounts can access allocations and resource totals.</p>
+    <form id="loginForm">
+      <label class="field-label"><span id="loginIdentityLabel">Username or email</span><input id="loginIdentity" autocomplete="username" required></label>
+      <label class="field-label"><span id="loginPasswordLabel">Password</span><input id="loginPassword" type="password" autocomplete="current-password" required></label>
+      <div id="loginError" class="form-error" hidden></div>
+      <button class="primary login-submit" type="submit">Log in</button>
+    </form>
+  </section>
+
+  <div id="adminApp" hidden>
+
+    <nav class="admin-section-tabs">
+      <button class="admin-section-tab active" type="button" data-admin-view="planner">Planner</button>
+      <button id="ownerToolsTabButton" class="admin-section-tab" type="button" data-admin-view="owner" hidden>Owner Tools</button>
+    </nav>
+
+    <section id="adminPlannerView" class="admin-view">
+    <nav class="day-tabs">
+      <button class="day-tab active" data-day="monday">🏗️ <span>City Construction<small>Monday</small></span></button>
+      <button class="day-tab" data-day="tuesday">📚 <span>Basic Skills<small>Tuesday</small></span></button>
+      <button class="day-tab" data-day="thursday">🦸 <span>Hero Development<small>Thursday</small></span></button>
+    </nav>
+
+    <section class="admin-welcome">
+      <div><strong id="adminName">Admin</strong><small id="adminRole"></small></div>
+      <div class="admin-toolbar">
+        <span>Private resource data</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="adminRoleTitle">🏛️ Chief Minister</strong><small id="reviewHelp">Click a slot to review applicants.</small></div>
+        <div class="badges"><span id="adminPendingBadge" class="badge amber">0 pending</span><span id="adminConfirmedBadge" class="badge green">0 confirmed</span></div>
+      </div>
+      <div class="admin-controls">
+        <input id="adminSearch" placeholder="Search player / Player ID">
+        <select id="allianceFilter">
+          <option value="">All alliances</option><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option>
+        </select>
+        <select id="sortApplicants">
+          <option value="best">Best fit</option>
+          <option value="name">Name</option>
+          <option value="alliance">Alliance</option>
+          <option value="truegold">Truegold</option>
+          <option value="general">General speed ups</option>
+          <option value="research">Research speed ups</option>
+          <option value="training">Training speed ups</option>
+          <option value="construction">Construction speed ups</option>
+        </select>
+        <span id="dayLockState" class="badge"></span>
+        <button id="finaliseDayBtn" class="secondary" type="button">Finalise day</button>
+        <button id="reopenDayBtn" class="secondary" type="button" hidden>Reopen day</button>
+      </div>
+      <div id="adminCrossoverNote" class="note" hidden>🔁 Tuesday's first slot is the linked Monday 23:45 → Tuesday 00:15 Chief Minister appointment.</div>
+      <div id="adminSlotList" class="slot-list"></div>
+    </section>
+    <section class="card rejection-card">
+      <div class="schedule-header">
+        <div><strong id="rejectionLogTitle">Rejection Log</strong><small id="rejectionLogHelp">Keep track of rejected applications so someone can contact the player if needed.</small></div>
+      </div>
+      <div id="rejectionLog" class="rejection-log"></div>
+    </section>
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="needsAttentionTitle">Needs Attention</strong><small id="needsAttentionHelp">Rejected applicants who have not yet been marked contacted.</small></div>
+      </div>
+      <div id="needsAttentionList" class="rejection-log"></div>
+    </section>
+
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="activityLogTitle">Admin Activity Log</strong><small>Recent admin changes are recorded here.</small></div>
+        <button id="undoLastBtn" class="secondary" type="button">Undo last admin action</button>
+      </div>
+      <div id="activityLog" class="activity-log"></div>
+    </section>
+
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="historyTitle">KvK History</strong><small>Read-only snapshots of previous KvKs.</small></div>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+    </section>
+
+
+    <section id="adminOwnerView" class="admin-view" hidden>
+      <section class="card owner-tools-intro">
+        <div class="schedule-header">
+          <div>
+            <strong>Owner Tools</strong>
+            <small>Private controls only visible to the owner account.</small>
+          </div>
+        </div>
+        <div class="owner-action-grid">
+          <div>
+            <strong>Archive current KvK</strong>
+            <small>Save a read-only snapshot before resetting for the next cycle.</small>
+            <button id="archiveCycleBtn" class="secondary owner-only-btn" type="button">Archive current KvK</button>
+          </div>
+          <div>
+            <strong>Reset current KvK</strong>
+            <small>Clears current appointments and requests, while keeping player identities.</small>
+            <button id="resetKvkBtn" class="danger owner-only-btn" type="button">Reset KvK</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminPasswordManager" class="card owner-only-section" hidden>
+      <div class="schedule-header">
+        <div>
+          <strong>Admin Account Passwords</strong>
+          <small>Owner only · change the King or Minister login password.</small>
+        </div>
+      </div>
+      <form id="adminPasswordForm" class="admin-password-form">
+        <label class="field-label">
+          <span>Account</span>
+          <select id="passwordTargetRole" required>
+            <option value="king">King</option>
+            <option value="minister">Minister</option>
+          </select>
+        </label>
+
+        <label class="field-label">
+          <span>New password</span>
+          <input id="newAdminPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <label class="field-label">
+          <span>Confirm new password</span>
+          <input id="confirmAdminPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <div id="adminPasswordStatus" class="password-status" hidden></div>
+
+        <button id="changeAdminPasswordBtn" class="primary" type="submit">
+          Change Password
+        </button>
+      </form>
+    </section>
+    </section>
+
+  </div>
+</main>
+
+<dialog id="applicantDialog">
+  <button type="button" class="close-btn" data-close="applicantDialog">×</button>
+  <h2>Slot Requests</h2>
+  <p id="applicantSlotLabel" class="muted"></p>
+  <button id="manualAddBtn" class="secondary manual-add-btn" type="button">Add player manually</button>
+  <div id="applicantList"></div>
+</dialog>
+
+<dialog id="manualBookingDialog">
+  <button type="button" class="close-btn" data-close="manualBookingDialog">×</button>
+  <h2 id="manualBookingTitle">Manual Booking</h2>
+  <p id="manualBookingHelp" class="muted">Create or assign a player to this slot without the player logging in.</p>
+  <form id="manualBookingForm">
+    <label class="field-label"><span id="manualPlayerIdLabel">Player ID</span><input id="manualPlayerId" required inputmode="numeric"></label>
+    <label class="field-label"><span id="manualPlayerNameLabel">Player name</span><input id="manualPlayerName" required></label>
+    <label class="field-label"><span id="manualAllianceLabel">Alliance</span>
+      <select id="manualAlliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select>
+    </label>
+    <div id="manualBookingError" class="form-error" hidden></div>
+    <div class="dialog-actions">
+      <button type="button" class="secondary" data-close="manualBookingDialog">Cancel</button>
+      <button type="submit" class="primary" id="manualBookingConfirm">Confirm manual booking</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=20260813-clean-v8"></script>
+<script src="translations.js?v=20260813-clean-v8"></script>
+<script src="admin.js?v=20260813-clean-v8"></script>
+  <script src="pwa-init.js?v=20260813-clean-v8"></script>
+</body>
+</html>

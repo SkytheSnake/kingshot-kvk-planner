@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en" data-theme="pink">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kingshot KvK Planner</title>
+  <link rel="stylesheet" href="style.css?v=20260813-clean-v8">
+
+  <link rel="icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#07070b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="KvK Planner">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+
+</head>
+<body>
+<header class="topbar player-topbar">
+  <div class="brand-block">
+    <h1><span class="server-number">1423</span> ⚔️ Kingshot KvK Planner</h1>
+    <p>PAR · VIK · KCB · FOR</p>
+  </div>
+
+  <div class="profile-centre">
+    <span id="profileStatus" class="profile-status incomplete">Profile required</span>
+  </div>
+
+  <div class="top-actions compact-actions">
+    <select id="languageSelect" class="language-select" aria-label="Language"><option value="en">English</option><option value="zh_tw">繁體中文</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="nl">Nederlands</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="fil">Filipino</option><option value="hi">हिन्दी</option><option value="pa">ਪੰਜਾਬੀ</option><option value="pl">Polski</option><option value="pt">Português</option><option value="ru">Русский</option><option value="ar">العربية</option><option value="vi">Tiếng Việt</option><option value="id">Bahasa Indonesia</option></select>
+    <select id="themeSelect" class="theme-select hidden-theme-select" aria-label="Theme"><option value="pink">Pink</option><option value="purple">Purple</option><option value="teal">Teal</option><option value="green">Green</option><option value="blue">Blue</option></select>
+    <a class="secondary button-link" href="admin.html">Admin Login</a>
+  </div>
+</header>
+
+<main class="planner-shell">
+  <aside class="left-rail">
+    <section class="card profile-card">
+      <div class="section-kicker">✦ YOUR PROFILE ✦</div>
+      <div class="profile-summary">
+        <div><span>Player ID</span><strong id="profilePlayerId">—</strong></div>
+        <div><span>Player Name</span><strong id="profilePlayerName">—</strong></div>
+        <div><span>Alliance</span><strong id="profileAlliance">—</strong></div>
+        <div><span>Profile Status</span><strong id="profileRailStatus">Required</strong></div>
+      </div>
+
+      <div id="profileResources" class="profile-resources" hidden>
+        <div class="profile-resources-title">Resources</div>
+        <div class="profile-resource-grid">
+          <div class="profile-resource-item profile-resource-item-wide"><span><img src="resource-truegold.png" alt="Truegold" class="resource-icon">Truegold</span><strong id="profileTruegold">0</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-general.png" alt="General speed up" class="resource-icon">General</span><strong id="profileGeneral">0h</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-research.png" alt="Research speed up" class="resource-icon">Research</span><strong id="profileResearch">0h</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-training.png" alt="Training speed up" class="resource-icon">Training</span><strong id="profileTraining">0h</strong></div>
+          <div class="profile-resource-item"><span><img src="resource-construction.png" alt="Construction speed up" class="resource-icon">Construction</span><strong id="profileConstruction">0h</strong></div>
+        </div>
+      </div>
+
+      <button id="profileBtn" class="primary wide-btn" type="button">My KvK Profile</button>
+    </section>
+
+    <section class="card my-requests left-my-requests">
+      <div class="schedule-header">
+        <div><strong>My Requests</strong><small>You can replace your choices for a day by selecting a new set of 3–5 times and submitting again.</small></div>
+      </div>
+      <div id="myRequests"></div>
+    </section>
+
+    <section class="card theme-card">
+      <div class="section-kicker">THEME</div>
+      <div class="theme-dots" id="themeDots">
+        <button class="theme-dot" data-theme-choice="pink" aria-label="Pink theme"></button>
+        <button class="theme-dot" data-theme-choice="purple" aria-label="Purple theme"></button>
+        <button class="theme-dot" data-theme-choice="teal" aria-label="Teal theme"></button>
+        <button class="theme-dot" data-theme-choice="green" aria-label="Green theme"></button>
+        <button class="theme-dot" data-theme-choice="blue" aria-label="Blue theme"></button>
+      </div>
+      <div id="themeName" class="theme-name">Retro Pink</div>
+    </section>
+  </aside>
+
+  <section class="main-column">
+    <nav class="day-tabs day-tabs-dated">
+      <button class="day-tab active" data-day="monday">
+        <span class="tab-date" id="mondayDate">MON</span>
+        <span>City Construction<small>Monday</small></span>
+      </button>
+      <button class="day-tab" data-day="tuesday">
+        <span class="tab-date" id="tuesdayDate">TUE</span>
+        <span>Basic Skills<small>Tuesday</small></span>
+      </button>
+      <button class="day-tab" data-day="thursday">
+        <span class="tab-date" id="thursdayDate">THU</span>
+        <span>Hero Development<small>Thursday</small></span>
+      </button>
+    </nav>
+
+    <section id="connectionBanner" class="connection-banner">Connecting to shared planner…</section>
+    <section id="confirmedAppointmentBanner" class="confirmed-appointment-banner" hidden></section>
+
+    <section class="info-bar">
+      <div>
+        <small id="roleSmall">Chief Minister</small>
+        <strong>Select 3–5 acceptable slots</strong>
+        <div id="deadlineText" class="deadline-text"></div>
+        <div id="deadlineCountdown" class="deadline-countdown"></div>
+      </div>
+      <span id="deadlineState">UTC</span>
+    </section>
+
+    <section class="card">
+      <button id="tipsToggle" class="card-toggle" type="button">
+        <span>💡 <strong>Points Tips</strong></span><span id="tipsArrow">⌄</span>
+      </button>
+      <div id="tipsPanel" class="tips-panel"></div>
+    </section>
+
+    <section id="lockedPanel" class="locked-panel">
+      <span>🔒 Complete your KvK Profile before requesting minister slots.</span>
+      <button id="lockedProfileBtn" class="primary" type="button">Complete Profile</button>
+    </section>
+
+    <section id="selectionPanel" class="selection-panel sticky-mobile-submit" hidden>
+      <div><strong>Choose the times you can accept</strong><p>Pick at least 3 and no more than 5. All selected slots are treated equally.</p><p id="replaceWarning" class="replace-warning" hidden></p></div>
+      <div class="selection-controls">
+        <span id="selectionCount">0 of 5 selected</span>
+        <button id="submitBtn" class="primary" type="button" disabled>Submit Requests</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="schedule-header">
+        <div><strong id="roleTitle">🏛️ Chief Minister</strong><small id="scheduleSummary"></small></div>
+        <div class="badges"><span id="confirmedBadge" class="badge green">0 confirmed</span></div>
+      </div>
+      <div id="crossoverNote" class="note" hidden>🔁 Tuesday's first slot is the same Chief Minister appointment as Monday 23:45 → Tuesday 00:15.</div>
+      <div id="slotList" class="slot-list"></div>
+    </section>
+  </section>
+</main>
+
+  <footer class="planner-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>Install the KvK Planner</strong>
+        <small>Add it to your phone or desktop for quick access.</small>
+      </div>
+      <button id="installAppBtn" class="primary install-btn footer-install-btn" type="button" hidden>Install App</button>
+    </div>
+  </footer>
+
+
+<dialog id="profileDialog">
+  <form id="profileForm">
+    <button type="button" class="close-btn" data-close="profileDialog">×</button>
+    <h2 id="profileDialogTitle">Find your KvK Profile</h2>
+    <p id="profileIntro" class="muted">Enter your Kingshot Player ID. If you have used the planner before, your existing profile will load automatically.</p>
+
+    <label class="field-label">
+      <span data-i18n="player_id">Player ID</span>
+      <div class="player-id-row">
+        <input id="playerId" required inputmode="numeric" placeholder="Player ID">
+        <button id="findProfileBtn" type="button" class="primary">Continue</button>
+      </div>
+    </label>
+
+    <div id="profileDetails" hidden>
+      <div class="two-col">
+        <label class="field-label"><span data-i18n="player_name">Player Name</span><input id="playerName" required placeholder="Current IGN"></label>
+        <label class="field-label"><span data-i18n="alliance">Alliance</span>
+          <select id="alliance" required><option>PAR</option><option>VIK</option><option>KCB</option><option>FOR</option></select>
+        </label>
+      </div>
+
+      <div class="resource-box">
+        <h3>Resource Snapshot</h3>
+        <label><span><img src="resource-truegold.png" alt="Truegold" class="resource-icon resource-icon-inline"> <span data-i18n="truegold">Truegold</span></span><input id="truegold" type="number" min="0" step="1" value="0"></label>
+        <label><span><img src="resource-general.png" alt="General speed up" class="resource-icon resource-icon-inline"> <span data-i18n="general">General Speed Up (Hours)</span></span><input id="general" type="number" min="0" step="0.5" value="0"></label>
+        <label><span><img src="resource-research.png" alt="Research speed up" class="resource-icon resource-icon-inline"> <span data-i18n="research">Research Speed Up (Hours)</span></span><input id="research" type="number" min="0" step="0.5" value="0"></label>
+        <label><span><img src="resource-training.png" alt="Training speed up" class="resource-icon resource-icon-inline"> <span data-i18n="training">Training Speed Up (Hours)</span></span><input id="training" type="number" min="0" step="0.5" value="0"></label>
+        <label><span><img src="resource-construction.png" alt="Construction speed up" class="resource-icon resource-icon-inline"> <span data-i18n="construction">Construction Speed Up (Hours)</span></span><input id="construction" type="number" min="0" step="0.5" value="0"></label>
+      </div>
+    </div>
+
+    <div id="profileLookupStatus" class="lookup-status" hidden></div>
+    <div id="profileError" class="form-error" hidden></div>
+
+    <div class="dialog-actions">
+      <button type="button" class="secondary" data-close="profileDialog">Cancel</button>
+      <button id="saveProfileBtn" type="submit" class="primary" hidden>Save Profile</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=20260813-clean-v8"></script>
+<script src="translations.js?v=20260813-clean-v8"></script>
+<script src="app.js?v=20260813-clean-v8"></script>
+  <script src="pwa-init.js?v=20260813-clean-v8"></script>
+</body>
+</html>
