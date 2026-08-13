@@ -553,3 +553,60 @@ input,select,textarea,dialog,.card,
   align-items:center;
   gap:7px;
 }
+
+
+/* Owner-only admin password manager */
+.owner-only-section{
+  border-color:rgba(var(--accent-rgb),.42);
+}
+.admin-password-form{
+  display:grid;
+  grid-template-columns:minmax(160px,.7fr) minmax(200px,1fr) minmax(200px,1fr) auto;
+  gap:10px;
+  align-items:end;
+  padding:14px;
+}
+.admin-password-form .field-label{
+  margin:0;
+}
+.admin-password-form input,
+.admin-password-form select{
+  margin-top:5px;
+}
+.admin-password-form button{
+  min-height:38px;
+  white-space:nowrap;
+}
+.password-status{
+  grid-column:1 / -1;
+  padding:9px 10px;
+  border-radius:6px;
+  font-size:11px;
+  font-weight:700;
+}
+.password-status.success{
+  border:1px solid #326756;
+  background:#10221d;
+  color:#72d9b3;
+}
+.password-status.error{
+  border:1px solid #6e3445;
+  background:#241117;
+  color:#eaa1b4;
+}
+@media(max-width:900px){
+  .admin-password-form{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:600px){
+  .admin-password-form{
+    grid-template-columns:1fr;
+  }
+  .password-status{
+    grid-column:auto;
+  }
+  .admin-password-form button{
+    width:100%;
+  }
+}

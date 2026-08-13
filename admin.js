@@ -138,8 +138,10 @@ function showAdminApp(show){
     $("adminRole").textContent=admin.admin_role.toUpperCase();
     if($("resetKvkBtn")) $("resetKvkBtn").hidden=admin.admin_role!=="owner";
     if($("archiveCycleBtn")) $("archiveCycleBtn").hidden=admin.admin_role!=="owner";
+    if($("adminPasswordManager")) $("adminPasswordManager").hidden=admin.admin_role!=="owner";
   }else if($("resetKvkBtn")){
     $("resetKvkBtn").hidden=true;
+    if($("adminPasswordManager")) $("adminPasswordManager").hidden=true;
   }
 }
 
@@ -509,6 +511,83 @@ async function archiveCurrentCycle(){
   await loadAdminData();
 }
 
+
+async function changeManagedAdminPassword(event){
+  event.preventDefault();
+  if(admin?.admin_role!=="owner") return;
+
+  const role=$("passwordTargetRole").value;
+  const password=$("newAdminPassword").value;
+  const confirmPassword=$("confirmAdminPassword").value;
+  const status=$("adminPasswordStatus");
+  const button=$("changeAdminPasswordBtn");
+
+  status.hidden=true;
+  status.className="password-status";
+
+  if(!["king","minister"].includes(role)){
+    status.textContent="Only the King and Minister accounts can be changed here.";
+    status.classList.add("error");
+    status.hidden=false;
+    return;
+  }
+
+  if(password.length<8){
+    status.textContent="Password must be at least 8 characters.";
+    status.classList.add("error");
+    status.hidden=false;
+    return;
+  }
+
+  if(password!==confirmPassword){
+    status.textContent="The passwords do not match.";
+    status.classList.add("error");
+    status.hidden=false;
+    return;
+  }
+
+  const label=role==="king" ? "King" : "Minister";
+  if(!confirm(`Change the ${label} account password?`)) return;
+
+  button.disabled=true;
+  button.textContent="Changing…";
+
+  try{
+    const { data,error }=await sb.functions.invoke("change-admin-password",{
+      body:{targetRole:role,password}
+    });
+
+    if(error){
+      let message=error.message||"Unable to change password.";
+      try{
+        if(error.context){
+          const body=await error.context.json();
+          if(body?.error) message=body.error;
+        }
+      }catch(_){}
+      throw new Error(message);
+    }
+
+    if(!data?.success){
+      throw new Error(data?.error||"Unable to change password.");
+    }
+
+    $("newAdminPassword").value="";
+    $("confirmAdminPassword").value="";
+    status.textContent=`✓ ${label} password changed successfully.`;
+    status.classList.add("success");
+    status.hidden=false;
+  }catch(error){
+    console.error(error);
+    status.textContent=error.message||"Unable to change password.";
+    status.classList.add("error");
+    status.hidden=false;
+  }finally{
+    button.disabled=false;
+    button.textContent="Change Password";
+  }
+}
+
 function bindEvents(){
   $("adminSearch").addEventListener("input",renderAdmin);
   $("allianceFilter").addEventListener("change",renderAdmin);
@@ -520,6 +599,7 @@ function bindEvents(){
   $("manualAddBtn").addEventListener("click",openManualBooking);
   $("manualBookingForm").addEventListener("submit",submitManualBooking);
   $("resetKvkBtn").addEventListener("click",resetKvk);
+  if($("adminPasswordForm")) $("adminPasswordForm").addEventListener("submit",changeManagedAdminPassword);
   $("loginForm").addEventListener("submit",async event=>{
     event.preventDefault();
     $("loginError").hidden=true;

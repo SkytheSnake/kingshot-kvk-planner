@@ -202,3 +202,32 @@ Cache version: `20260810-complete-v5`
 - Source icons were cleaned up and upscaled for clearer UI use.
 
 Cache version: `20260810-complete-v6`
+
+
+## v7 owner-only admin password manager
+
+- Added **Admin Account Passwords** to the admin dashboard.
+- Visible only to the `owner` role.
+- Owner can change the **King** or **Minister** password.
+- Minimum password length: 8 characters.
+- Owner password cannot be changed through this panel.
+- Password changes are performed by a secure Supabase Edge Function.
+- No service-role/secret credential is exposed in GitHub or browser JavaScript.
+
+### One-time setup
+
+Follow:
+
+`EDGE-FUNCTION-SETUP.md`
+
+and deploy:
+
+`EDGE-FUNCTION-change-admin-password.ts`
+
+as a Supabase Edge Function named:
+
+`change-admin-password`
+
+No database SQL migration is required for this feature.
+
+Cache version: `20260810-complete-v7`

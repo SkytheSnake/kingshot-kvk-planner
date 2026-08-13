@@ -1,4 +1,4 @@
-const CACHE_NAME = "kvk-planner-complete-20260810-v6";
+const CACHE_NAME = "kvk-planner-complete-20260810-v7";
 const CORE_ASSETS = [
   "./",
   "./index.html",

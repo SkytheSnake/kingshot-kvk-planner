@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>KvK Planner Admin</title>
-  <link rel="stylesheet" href="style.css?v=20260810-complete-v6">
+  <link rel="stylesheet" href="style.css?v=20260810-complete-v7">
 
   <link rel="icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -106,6 +106,41 @@
       <div id="activityLog" class="activity-log"></div>
     </section>
 
+
+    <section id="adminPasswordManager" class="card owner-only-section" hidden>
+      <div class="schedule-header">
+        <div>
+          <strong>Admin Account Passwords</strong>
+          <small>Owner only · change the King or Minister login password.</small>
+        </div>
+      </div>
+      <form id="adminPasswordForm" class="admin-password-form">
+        <label class="field-label">
+          <span>Account</span>
+          <select id="passwordTargetRole" required>
+            <option value="king">King</option>
+            <option value="minister">Minister</option>
+          </select>
+        </label>
+
+        <label class="field-label">
+          <span>New password</span>
+          <input id="newAdminPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <label class="field-label">
+          <span>Confirm new password</span>
+          <input id="confirmAdminPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <div id="adminPasswordStatus" class="password-status" hidden></div>
+
+        <button id="changeAdminPasswordBtn" class="primary" type="submit">
+          Change Password
+        </button>
+      </form>
+    </section>
+
     <section class="card">
       <div class="schedule-header">
         <div><strong id="historyTitle">KvK History</strong><small>Read-only snapshots of previous KvKs.</small></div>
@@ -143,9 +178,9 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260810-complete-v6"></script>
-<script src="translations.js?v=20260810-complete-v6"></script>
-<script src="admin.js?v=20260810-complete-v6"></script>
-  <script src="pwa-init.js?v=20260810-complete-v6"></script>
+<script src="config.js?v=20260810-complete-v7"></script>
+<script src="translations.js?v=20260810-complete-v7"></script>
+<script src="admin.js?v=20260810-complete-v7"></script>
+  <script src="pwa-init.js?v=20260810-complete-v7"></script>
 </body>
 </html>
