@@ -697,3 +697,48 @@ html[dir="rtl"] .footer-inner{
   .owner-action-grid{grid-template-columns:1fr}
   .admin-section-tab{flex:1;min-width:0}
 }
+
+
+/* v9: larger Kingshot resource icons */
+.resource-icon{
+  width:28px;
+  height:28px;
+}
+.resource-icon-inline{
+  width:32px;
+  height:32px;
+}
+.profile-resource-item{
+  min-height:58px;
+}
+.profile-resource-item span{
+  gap:9px;
+  font-size:10px;
+}
+.profile-resource-item strong{
+  font-size:13px;
+}
+.resource-box label{
+  min-height:48px;
+}
+.resource-box label span{
+  gap:10px;
+}
+
+/* v9: logs/history admin tab */
+#adminLogsView{
+  display:grid;
+  gap:10px;
+}
+#adminLogsView[hidden]{
+  display:none!important;
+}
+#undoLastMainBtn{
+  margin-left:auto;
+}
+@media(max-width:800px){
+  #undoLastMainBtn{
+    margin-left:0;
+    width:100%;
+  }
+}

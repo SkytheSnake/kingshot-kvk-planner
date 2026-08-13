@@ -132,8 +132,10 @@ async function checkAdmin(){
 function setAdminSection(view="planner"){
   const isOwner=admin?.admin_role==="owner";
   if(view==="owner" && !isOwner) view="planner";
+  if(!["planner","logs","owner"].includes(view)) view="planner";
 
   if($("adminPlannerView")) $("adminPlannerView").hidden=view!=="planner";
+  if($("adminLogsView")) $("adminLogsView").hidden=view!=="logs";
   if($("adminOwnerView")) $("adminOwnerView").hidden=view!=="owner";
 
   document.querySelectorAll(".admin-section-tab").forEach(btn=>{
@@ -618,6 +620,7 @@ function bindEvents(){
   $("finaliseDayBtn").addEventListener("click",finaliseDay);
   $("reopenDayBtn").addEventListener("click",reopenDay);
   $("undoLastBtn").addEventListener("click",undoLastAction);
+  if($("undoLastMainBtn")) $("undoLastMainBtn").addEventListener("click",undoLastAction);
   $("archiveCycleBtn").addEventListener("click",archiveCurrentCycle);
   $("manualAddBtn").addEventListener("click",openManualBooking);
   $("manualBookingForm").addEventListener("submit",submitManualBooking);

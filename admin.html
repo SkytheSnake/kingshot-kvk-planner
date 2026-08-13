@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>KvK Planner Admin</title>
-  <link rel="stylesheet" href="style.css?v=20260813-clean-v8">
+  <link rel="stylesheet" href="style.css?v=20260813-clean-v9">
 
   <link rel="icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -47,6 +47,7 @@
 
     <nav class="admin-section-tabs">
       <button class="admin-section-tab active" type="button" data-admin-view="planner">Planner</button>
+      <button id="logsHistoryTabButton" class="admin-section-tab" type="button" data-admin-view="logs">Logs &amp; History</button>
       <button id="ownerToolsTabButton" class="admin-section-tab" type="button" data-admin-view="owner" hidden>Owner Tools</button>
     </nav>
 
@@ -87,24 +88,32 @@
         <span id="dayLockState" class="badge"></span>
         <button id="finaliseDayBtn" class="secondary" type="button">Finalise day</button>
         <button id="reopenDayBtn" class="secondary" type="button" hidden>Reopen day</button>
+        <button id="undoLastMainBtn" class="secondary" type="button">Undo last admin action</button>
       </div>
       <div id="adminCrossoverNote" class="note" hidden>🔁 Tuesday's first slot is the linked Monday 23:45 → Tuesday 00:15 Chief Minister appointment.</div>
       <div id="adminSlotList" class="slot-list"></div>
     </section>
-    <section class="card rejection-card">
+
+    </section>
+
+
+
+    <section id="adminLogsView" class="admin-view" hidden>
+      <section class="card rejection-card">
       <div class="schedule-header">
         <div><strong id="rejectionLogTitle">Rejection Log</strong><small id="rejectionLogHelp">Keep track of rejected applications so someone can contact the player if needed.</small></div>
       </div>
       <div id="rejectionLog" class="rejection-log"></div>
     </section>
-    <section class="card">
+
+      <section class="card">
       <div class="schedule-header">
         <div><strong id="needsAttentionTitle">Needs Attention</strong><small id="needsAttentionHelp">Rejected applicants who have not yet been marked contacted.</small></div>
       </div>
       <div id="needsAttentionList" class="rejection-log"></div>
     </section>
 
-    <section class="card">
+      <section class="card">
       <div class="schedule-header">
         <div><strong id="activityLogTitle">Admin Activity Log</strong><small>Recent admin changes are recorded here.</small></div>
         <button id="undoLastBtn" class="secondary" type="button">Undo last admin action</button>
@@ -112,14 +121,13 @@
       <div id="activityLog" class="activity-log"></div>
     </section>
 
-    <section class="card">
+      <section class="card">
       <div class="schedule-header">
         <div><strong id="historyTitle">KvK History</strong><small>Read-only snapshots of previous KvKs.</small></div>
       </div>
       <div id="historyList" class="history-list"></div>
     </section>
     </section>
-
 
     <section id="adminOwnerView" class="admin-view" hidden>
       <section class="card owner-tools-intro">
@@ -208,9 +216,9 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260813-clean-v8"></script>
-<script src="translations.js?v=20260813-clean-v8"></script>
-<script src="admin.js?v=20260813-clean-v8"></script>
-  <script src="pwa-init.js?v=20260813-clean-v8"></script>
+<script src="config.js?v=20260813-clean-v9"></script>
+<script src="translations.js?v=20260813-clean-v9"></script>
+<script src="admin.js?v=20260813-clean-v9"></script>
+  <script src="pwa-init.js?v=20260813-clean-v9"></script>
 </body>
 </html>
